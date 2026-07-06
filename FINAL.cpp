@@ -1,4 +1,4 @@
-#include <iostream>
+
 #include <string>
 #include <iomanip>
 #include <limits>
@@ -7,7 +7,7 @@
 #include <fstream>
 #include <cstdlib>
 
-
+using namespace std;
 
 void clearScreen() {
     #ifdef _WIN32
