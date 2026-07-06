@@ -688,7 +688,7 @@ public:
     void tampilkanStruk(const string& metodePembayaran, const string& kodeTransaksi);
     void simpanRiwayatTransaksi(const string& metodePembayaran, const string& kodeTransaksi);
 
-    void tampilkanMenuCustomer();
+    
     void prosesMenuCustomer();
 };
 
