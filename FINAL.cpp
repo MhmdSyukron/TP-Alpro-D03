@@ -23,6 +23,8 @@ void pauseScreen() {
     cin.get();
 }
 
+// mantappp
+
 const int MAX_USERS = 100;
 const int MAX_KERANJANG = 100;
 const int MAX_RIWAYAT = 100;
