@@ -1,0 +1,2 @@
+BN001|Sabun Baju|40|Liter|400|12/12/2027|PT Softener|5
+BN002|Pewangi Pakaian|90|Liter|5000|12/12/2027|PT Downy|5

@@ -67,3 +67,16 @@ Potongan poin: Rp120
 
 TOTAL: Rp9880
 =========================
+
+Kode Transaksi : AMBA/260707/001
+Tanggal        : 2026-07-07
+Nama Pelanggan : Nizar Muzakki
+Telepon        : 098878885556
+Alamat         : Ciamis
+Metode Bayar   : Cash
+Status         : Selesai
+-------------------------
+- Cuci Umum | Setrika Saja | Campuran | 3.0 kg x Rp4000 = Rp12000
+
+TOTAL: Rp12000
+=========================

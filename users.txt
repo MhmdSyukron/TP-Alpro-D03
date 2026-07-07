@@ -13,7 +13,7 @@ Nama       : Nizar Muzakki
 Username   : nizar
 Password   : 182
 Role       : customer
-Poin       : 0
+Poin       : 120
 Alamat     : Ciamis
 No.Telepon : 098878885556
 =========================
