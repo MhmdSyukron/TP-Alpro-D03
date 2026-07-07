@@ -1,21 +1,21 @@
 =========================
-Nama       : admin
-Username   : admin
-Password   : admin
+Nama       : Muhammad Syukron
+Username   : syukron
+Password   : 181
 Role       : admin
 Poin       : 0
-Alamat     : admin
+Alamat     : Bangka Belitung
 No.Telepon : 083878709852
 =========================
 
 =========================
-Nama       : Muhammad Syukron
-Username   : syukron
-Password   : 181
+Nama       : Nizar Muzakki
+Username   : nizar
+Password   : 182
 Role       : customer
-Poin       : 60
-Alamat     : Bangka Belitung
-No.Telepon : 083878709852
+Poin       : 0
+Alamat     : Ciamis
+No.Telepon : 098878885556
 =========================
 
 =========================
@@ -23,18 +23,18 @@ Nama       : Fajar Irwansah
 Username   : fajar
 Password   : 188
 Role       : customer
-Poin       : 1400
+Poin       : 0
 Alamat     : Jakarta
-No.Telepon : 081410531940
+No.Telepon : 098712523764
 =========================
 
 =========================
-Nama       : Nizar Muzakki
-Username   : nizar
-Password   : 183
+Nama       : Sahrul Ramadhan
+Username   : sahrul
+Password   : 167
 Role       : customer
-Poin       : 1120
-Alamat     : Ciamis
-No.Telepon : 087826318101
+Poin       : 0
+Alamat     : Bangka Belitung
+No.Telepon : 098887776262
 =========================
 

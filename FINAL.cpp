@@ -9,37 +9,6 @@
 
 using namespace std;
 
-// ============================================================
-// TEMPLATE TAMPILAN
-// ============================================================
-
-void tampilkanHeader(const string &judul)
-{
-    cout << "\n";
-    cout << "============================================================\n";
-    cout << "                     LAUNDRY AMBA\n";
-    cout << "              Sistem Manajemen Laundry\n";
-    cout << "============================================================\n";
-
-    int panjang = judul.length();
-    int spasi = (60 - panjang) / 2;
-
-    cout << string(spasi, ' ');
-    cout << judul << endl;
-
-    cout << "============================================================\n";
-}
-
-void tampilkanFooter()
-{
-    cout << "============================================================\n";
-}
-
-void garis()
-{
-    cout << "------------------------------------------------------------\n";
-}
-
 //==============================================================
 // TEMPLATE TAMPILAN
 //==============================================================
@@ -61,12 +30,22 @@ void garisTengah()
     cout << string(LEBAR, '-') << endl;
 }
 
+void garis()
+{
+    garisTengah();
+}
+
+void tampilkanFooter()
+{
+    garisBawah();
+}
+
 void tampilkanHeader(const string &judul)
 {
     garisAtas();
 
-    cout << setw(38) << "LAUNDRY AMBA" << endl;
-    cout << setw(45) << "Sistem Manajemen Laundry" << endl;
+    cout << setw(38) << "                        LAUNDRY AMBA" << endl;
+    cout << setw(45) << "                  Sistem Manajemen Laundry" << endl;
 
     garisAtas();
 
@@ -961,9 +940,13 @@ void Customer::saveUsers() {
 }
 
 int Customer::login(string& role) {
+
+    string username, password;
+
     tampilkanHeader("LOGIN");
 
     cout << "\n";
+
     cout << "Username : ";
     cin >> username;
 
@@ -972,17 +955,21 @@ int Customer::login(string& role) {
 
     garis();
 
-    int i;
+    for (int i = 0; i < jumlahPengguna; ++i) {
 
-    for(i = 0; i < jumlahPengguna; ++i) {
-        if(user[i].username == username && user[i].password == password) {
+        if (user[i].username == username &&
+            user[i].password == password) {
+
             role = user[i].role;
             return i;
         }
     }
-    cout << "Login gagal. Username atau password salah.\n";
+
+    cout << "\nLogin gagal. Username atau password salah.\n";
+
     pauseScreen();
     clearScreen();
+
     return -1;
 }
 
