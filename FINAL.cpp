@@ -23,7 +23,7 @@ void pauseScreen() {
     cin.get();
 }
 
-// joyyy
+// cusss
 
 const int MAX_USERS = 100;
 const int MAX_KERANJANG = 100;
