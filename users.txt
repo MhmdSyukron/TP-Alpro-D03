@@ -13,7 +13,7 @@ Nama       : Nizar Muzakki
 Username   : nizar
 Password   : 182
 Role       : customer
-Poin       : 120
+Poin       : 1100
 Alamat     : Ciamis
 No.Telepon : 098878885556
 =========================
@@ -23,7 +23,7 @@ Nama       : Fajar Irwansah
 Username   : fajar
 Password   : 188
 Role       : customer
-Poin       : 0
+Poin       : 1430
 Alamat     : Jakarta
 No.Telepon : 098712523764
 =========================
@@ -33,8 +33,38 @@ Nama       : Sahrul Ramadhan
 Username   : sahrul
 Password   : 167
 Role       : customer
-Poin       : 0
+Poin       : 1560
 Alamat     : Bangka Belitung
 No.Telepon : 098887776262
+=========================
+
+=========================
+Nama       : Rasya Islami
+Username   : rasya
+Password   : 166
+Role       : customer
+Poin       : 280
+Alamat     : Seleman
+No.Telepon : 0878816616112
+=========================
+
+=========================
+Nama       : Galih
+Username   : galih
+Password   : 164
+Role       : customer
+Poin       : 230
+Alamat     : Indramayu
+No.Telepon : 087856431276
+=========================
+
+=========================
+Nama       : Salman Alfarizi
+Username   : salman
+Password   : 192
+Role       : customer
+Poin       : 1380
+Alamat     : Kalimantan
+No.Telepon : 09888888817111
 =========================
 

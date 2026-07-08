@@ -44,8 +44,8 @@ void tampilkanHeader(const string &judul)
 {
     garisAtas();
 
-    cout << setw(38) << "                        LAUNDRY AMBA" << endl;
-    cout << setw(45) << "                  Sistem Manajemen Laundry" << endl;
+    cout << setw(38) << "                       LAUNDRY AMBA" << endl;
+    cout << setw(45) << "                 Sistem Manajemen Laundry" << endl;
 
     garisAtas();
 
@@ -951,7 +951,7 @@ int Customer::login(string& role) {
 
     string username, password;
 
-    tampilkanHeader("LOGIN");
+    tampilkanHeader("                          LOGIN");
 
     cout << "\n";
 
@@ -984,7 +984,7 @@ int Customer::login(string& role) {
 int Customer::registrasiPengguna() {
 	clearScreen();
 
-    tampilkanHeader("REGISTRASI CUSTOMER");
+    tampilkanHeader("           REGISTRASI CUSTOMER");
     if(jumlahPengguna >= MAX_USERS) {
         cout << "\nMaksimum pengguna telah tercapai.\n\n";
         pauseScreen();
@@ -2569,8 +2569,7 @@ void Admin::tampilkanDashboard() {
     }
 
     cout << endl;
-    garisAtas();
-    cout << setw(38) << "DASHBOARD ADMIN" << endl;
+    cout << setw(38) << "                      DASHBOARD ADMIN" << endl;
     garisAtas();
 
     cout << left;
@@ -3520,7 +3519,7 @@ void Admin::menuAdmin() {
 
         clearScreen();
 
-        tampilkanHeader("MENU ADMIN");
+        tampilkanHeader("                           MENU ADMIN");
 
         tampilkanDashboard();
 
@@ -4185,7 +4184,29 @@ void ManajemenPengeluaran::menuPengeluaran() {
             }
                 
 
-            case 6:{
+            case 6:
+            {
+                clearScreen();
+                laporanHarian();
+                break;
+            }
+
+            case 7:
+            {
+                clearScreen();
+                laporanMingguan();
+                break;
+            }
+
+            case 8:
+            {
+                clearScreen();
+                laporanBulanan();
+                break;
+            }
+
+            case 9:
+            {
                 clearScreen();
 
                 cout << "=========================================\n";
@@ -4201,21 +4222,6 @@ void ManajemenPengeluaran::menuPengeluaran() {
                 pauseScreen();
                 break;
             }
-
-            case 7:
-                clearScreen();
-                laporanHarian();
-                break;
-
-            case 8:
-                clearScreen();
-                laporanMingguan();
-                break;
-
-            case 9:
-                clearScreen();
-                laporanBulanan();
-                break;
 
             case 0:
                 return;
@@ -4317,24 +4323,23 @@ void ManajemenPengeluaran::tambahPengeluaran()
     pauseScreen();
 }
 
-void ManajemenPengeluaran::savePengeluaran() {
+void ManajemenPengeluaran::savePengeluaran()
+{
     ofstream file("pengeluaran.txt");
 
     if(!file.is_open())
-    {
         return;
-    }
 
-    for(int i=0;i<jumlahData;i++)
+    for(int i = 0; i < jumlahData; i++)
     {
-        file<<data[i].idPengeluaran<<endl;
-        file<<data[i].tanggal<<endl;
-        file<<data[i].kategori<<endl;
-        file<<data[i].namaBarang<<endl;
-        file<<data[i].jumlah<<endl;
-        file<<data[i].hargaSatuan<<endl;
-        file<<data[i].totalPengeluaran<<endl;
-        file<<data[i].keterangan<<endl;
+        file << data[i].idPengeluaran << "|"
+             << data[i].tanggal << "|"
+             << data[i].kategori << "|"
+             << data[i].namaBarang << "|"
+             << data[i].jumlah << "|"
+             << data[i].hargaSatuan << "|"
+             << data[i].totalPengeluaran << "|"
+             << data[i].keterangan << endl;
     }
 
     file.close();
@@ -4344,7 +4349,7 @@ void ManajemenPengeluaran::loadPengeluaran()
 {
     ifstream file("pengeluaran.txt");
 
-    if (!file.is_open())
+    if(!file.is_open())
     {
         jumlahData = 0;
         return;
@@ -4352,23 +4357,32 @@ void ManajemenPengeluaran::loadPengeluaran()
 
     jumlahData = 0;
 
-    while (
-        getline(file, data[jumlahData].idPengeluaran) &&
-        getline(file, data[jumlahData].tanggal) &&
-        getline(file, data[jumlahData].kategori) &&
-        getline(file, data[jumlahData].namaBarang)
-    )
-    {
-        file >> data[jumlahData].jumlah;
-        file >> data[jumlahData].hargaSatuan;
-        file >> data[jumlahData].totalPengeluaran;
-        file.ignore(); // buang newline
+    string baris;
 
-        getline(file, data[jumlahData].keterangan);
+    while(getline(file, baris))
+    {
+        stringstream ss(baris);
+        string temp;
+
+        getline(ss, data[jumlahData].idPengeluaran, '|');
+        getline(ss, data[jumlahData].tanggal, '|');
+        getline(ss, data[jumlahData].kategori, '|');
+        getline(ss, data[jumlahData].namaBarang, '|');
+
+        getline(ss, temp, '|');
+        data[jumlahData].jumlah = atoi(temp.c_str());
+
+        getline(ss, temp, '|');
+        data[jumlahData].hargaSatuan = atof(temp.c_str());
+
+        getline(ss, temp, '|');
+        data[jumlahData].totalPengeluaran = atof(temp.c_str());
+
+        getline(ss, data[jumlahData].keterangan);
 
         jumlahData++;
 
-        if (jumlahData >= MAX_PENGELUARAN)
+        if(jumlahData >= MAX_PENGELUARAN)
             break;
     }
 
@@ -4386,29 +4400,37 @@ void ManajemenPengeluaran::loadPengeluaran()
         }
 
         cout << "\n";
-        cout << "=====================================================================================================\n";
-        cout << setw(5)  << left << "No"
-            << setw(12) << "ID"
+        cout << "===============================================================================================================\n";
+        cout << "                                      DAFTAR PENGELUARAN LAUNDRY\n";
+        cout << "===============================================================================================================\n";
+        cout << left
+            << setw(5)  << "No"
+            << setw(10) << "ID"
             << setw(15) << "Tanggal"
-            << setw(20) << "Kategori"
-            << setw(20) << "Barang"
-            << setw(15) << "Total" << endl;
+            << setw(18) << "Kategori"
+            << setw(28) << "Nama Barang"
+            << setw(8)  << "Qty"
+            << setw(15) << "Harga"
+            << setw(15) << "Total"
+            << endl;
 
-        cout << "=====================================================================================================\n";
+        cout << string(111,'=') << endl;
 
         for(int i = 0; i < jumlahData; i++)
         {
-            cout << setw(5)  << left << i + 1
-                << setw(12) << data[i].idPengeluaran
+            cout << left
+                << setw(5)  << i + 1
+                << setw(10) << data[i].idPengeluaran
                 << setw(15) << data[i].tanggal
-                << setw(20) << data[i].kategori
-                << setw(20) << data[i].namaBarang
-                << setw(15) << fixed << setprecision(0)
-                << data[i].totalPengeluaran
+                << setw(18) << data[i].kategori
+                << setw(28) << data[i].namaBarang
+                << setw(8)  << data[i].jumlah
+                << setw(15) << ("Rp " + to_string((int)data[i].hargaSatuan))
+                << setw(15) << ("Rp " + to_string((int)data[i].totalPengeluaran))
                 << endl;
         }
 
-        cout << "=====================================================================================================\n";
+        cout << string(111,'=') << endl;
 
         int pilih;
 
@@ -4421,21 +4443,25 @@ void ManajemenPengeluaran::loadPengeluaran()
 
             clearScreen();
 
-            cout << "=============================================\n";
-            cout << "          DETAIL PENGELUARAN\n";
-            cout << "=============================================\n";
+            cout << "====================================================\n";
+            cout << "              DETAIL PENGELUARAN\n";
+            cout << "====================================================\n";
 
-            cout << "ID              : " << p.idPengeluaran << endl;
-            cout << "Tanggal         : " << p.tanggal << endl;
-            cout << "Kategori        : " << p.kategori << endl;
-            cout << "Nama Barang     : " << p.namaBarang << endl;
-            cout << "Jumlah          : " << p.jumlah << endl;
-            cout << "Harga Satuan    : Rp " << p.hargaSatuan << endl;
-            cout << "Total           : Rp " << p.totalPengeluaran << endl;
-            cout << "Keterangan      : " << p.keterangan << endl;
+            cout << left << setw(20) << "ID Pengeluaran" << ": " << p.idPengeluaran << endl;
+            cout << left << setw(20) << "Tanggal"        << ": " << p.tanggal << endl;
+            cout << left << setw(20) << "Kategori"       << ": " << p.kategori << endl;
+            cout << left << setw(20) << "Nama Barang"    << ": " << p.namaBarang << endl;
+            cout << left << setw(20) << "Jumlah"         << ": " << p.jumlah << endl;
+            cout << left << setw(20) << "Harga Satuan"   << ": Rp " << fixed << setprecision(0) << p.hargaSatuan << endl;
+            cout << left << setw(20) << "Total"          << ": Rp " << fixed << setprecision(0) << p.totalPengeluaran << endl;
+            cout << left << setw(20) << "Keterangan"     << ": " << p.keterangan << endl;
 
-            cout << "=============================================\n";
+            cout << "====================================================\n";
 
+            pauseScreen();
+        } else if(pilih != 0)
+        {
+            cout << "\nNomor pengeluaran tidak valid!\n";
             pauseScreen();
         }
     }

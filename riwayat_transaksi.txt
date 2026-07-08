@@ -1,82 +1,140 @@
-Kode Transaksi : AMBA/260629/001
-Tanggal        : 2026-06-29
-Nama Pelanggan : Muhammad Syukron
-Telepon        : 083878709852
-Alamat         : Bangka Belitung
-Metode Bayar   : Cash
-Status         : Selesai
--------------------------
-- Satuan Premium | Jas/Blazer | Hitam Pekat | 2.0 helai x Rp35000 = Rp70000
-
-TOTAL: Rp70000
-=========================
-
-Kode Transaksi : AMBA/260629/002
-Tanggal        : 2026-06-29
-Nama Pelanggan : Nizar Muzakki
-Telepon        : 087826318101
-Alamat         : Ciamis
-Metode Bayar   : Transfer
-Status         : Selesai
--------------------------
-- Cuci Umum | Cuci Setrika | Campuran | 3.0 kg x Rp7000 = Rp21000
-
-TOTAL: Rp21000
-=========================
-
-Kode Transaksi : AMBA/260629/003
-Tanggal        : 2026-06-29
-Nama Pelanggan : Fajar Irwansah
-Telepon        : 081410531940
-Alamat         : Jakarta
-Metode Bayar   : Qris
-Status         : Diterima
--------------------------
-- Express | Same Day Service | Campuran | 4.0 kg x Rp20000 = Rp80000
-
-TOTAL: Rp80000
-=========================
-
-Kode Transaksi : AMBA/260705/001
-Tanggal        : 2026-07-05
-Nama Pelanggan : Muhammad Syukron
-Telepon        : 083878709852
-Alamat         : Bangka Belitung
-Metode Bayar   : Cash
-Status         : Diterima
--------------------------
-- Cuci Umum | Cuci Kering | Campura | 3.0 kg x Rp5000 = Rp15000
-- Layanan Tambahan | Parfum Laundry | Floral Garden | 2.0 5 ml x Rp4000 = Rp8000
-SUBTOTAL.: Rp23000
-Potongan poin: Rp1500
-
-TOTAL: Rp21500
-=========================
-
-Kode Transaksi : AMBA/260705/002
-Tanggal        : 2026-07-05
-Nama Pelanggan : Muhammad Syukron
-Telepon        : 083878709852
-Alamat         : Bangka Belitung
-Metode Bayar   : Cash
-Status         : Selesai
--------------------------
-- Cuci Umum | Cuci Kering | Campuran | 2.0 kg x Rp5000 = Rp10000
-SUBTOTAL.: Rp10000
-Potongan poin: Rp120
-
-TOTAL: Rp9880
-=========================
-
-Kode Transaksi : AMBA/260707/001
-Tanggal        : 2026-07-07
+Kode Transaksi : AMBA/260708/001
+Tanggal        : 2026-07-08
 Nama Pelanggan : Nizar Muzakki
 Telepon        : 098878885556
 Alamat         : Ciamis
 Metode Bayar   : Cash
 Status         : Selesai
 -------------------------
-- Cuci Umum | Setrika Saja | Campuran | 3.0 kg x Rp4000 = Rp12000
+- Cuci Umum | Cuci Setrika | Campuran | 4.0 kg x Rp7000 = Rp28000
+- Layanan Tambahan | Parfum Laundry | Jasmine Premium | 3.0 5 ml x Rp5000 = Rp15000
+- Layanan Tambahan | Softener | Edelweiss | 4.0 5 ml x Rp4000 = Rp16000
 
-TOTAL: Rp12000
+TOTAL: Rp59000
+=========================
+
+Kode Transaksi : AMBA/260708/002
+Tanggal        : 2026-07-08
+Nama Pelanggan : Fajar Irwansah
+Telepon        : 098712523764
+Alamat         : Jakarta
+Metode Bayar   : Transfer
+Status         : Selesai
+-------------------------
+- Khusus Barang | Cuci Sepatu Premium | Warna Hitam Pekat | 1.0 pasang x Rp65000 = Rp65000
+- Antar Jemput | Antar Jemput 5-10 KM | Imogiri | 1.0 layanan x Rp25000 = Rp25000
+
+TOTAL: Rp90000
+=========================
+
+Kode Transaksi : AMBA/260708/003
+Tanggal        : 2026-07-08
+Nama Pelanggan : Sahrul Ramadhan
+Telepon        : 098887776262
+Alamat         : Bangka Belitung
+Metode Bayar   : Qris
+Status         : Selesai
+-------------------------
+- Dry Cleaning | Jas Formal | Warnah Merah | 1.0 helai x Rp60000 = Rp60000
+- Layanan Tambahan | Parfum Laundry | Floral Garden | 2.0 5 ml x Rp4000 = Rp8000
+- Layanan Tambahan | Softener | Sakura | 2.0 5 ml x Rp3000 = Rp6000
+
+TOTAL: Rp74000
+=========================
+
+Kode Transaksi : AMBA/260708/004
+Tanggal        : 2026-07-08
+Nama Pelanggan : Nizar Muzakki
+Telepon        : 098878885556
+Alamat         : Ciamis
+Metode Bayar   : Transfer
+Status         : Selesai
+-------------------------
+- Cuci Umum | Cuci Setrika | Celana | 4.0 kg x Rp7000 = Rp28000
+- Layanan Tambahan | Softener | Sakura | 2.0 5 ml x Rp3000 = Rp6000
+- Layanan Tambahan | Parfum Laundry | Jasmine Premium | 1.0 5 ml x Rp5000 = Rp5000
+
+TOTAL: Rp39000
+=========================
+
+Kode Transaksi : AMBA/260708/005
+Tanggal        : 2026-07-08
+Nama Pelanggan : Sahrul Ramadhan
+Telepon        : 098887776262
+Alamat         : Bangka Belitung
+Metode Bayar   : Transfer
+Status         : Selesai
+-------------------------
+- Express | Same Day Service | Campuran | 3.0 kg x Rp20000 = Rp60000
+- Layanan Tambahan | Softener | Edelweiss | 3.0 5 ml x Rp4000 = Rp12000
+- Layanan Tambahan | Parfum Laundry | Jasmine Premium | 2.0 5 ml x Rp5000 = Rp10000
+
+TOTAL: Rp82000
+=========================
+
+Kode Transaksi : AMBA/260708/006
+Tanggal        : 2026-07-08
+Nama Pelanggan : Fajar Irwansah
+Telepon        : 098712523764
+Alamat         : Jakarta
+Metode Bayar   : Cash
+Status         : Selesai
+-------------------------
+- Satuan Premium | Jaket/Sweater | Warna Abu-Abu | 2.0 helai x Rp15000 = Rp30000
+- Layanan Tambahan | Parfum Laundry | Floral Garden | 2.0 5 ml x Rp4000 = Rp8000
+- Layanan Tambahan | Parfum Laundry | Jasmine Premium | 3.0 5 ml x Rp5000 = Rp15000
+
+TOTAL: Rp53000
+=========================
+
+Kode Transaksi : AMBA/260708/007
+Tanggal        : 2026-07-08
+Nama Pelanggan : Rasya Islami
+Telepon        : 0878816616112
+Alamat         : Seleman
+Metode Bayar   : Qris
+Status         : Selesai
+-------------------------
+- Cuci Umum | Cuci Basah | Campuran | 3.0 kg x Rp4000 = Rp12000
+- Layanan Tambahan | Parfum Laundry | Floral Garden | 3.0 5 ml x Rp4000 = Rp12000
+- Layanan Tambahan | Softener | Lavender | 2.0 5 ml x Rp2000 = Rp4000
+SUBTOTAL.: Rp28000
+Promo: Rp560
+
+TOTAL: Rp27440
+=========================
+
+Kode Transaksi : AMBA/260708/008
+Tanggal        : 2026-07-08
+Nama Pelanggan : Galih
+Telepon        : 087856431276
+Alamat         : Indramayu
+Metode Bayar   : Transfer
+Status         : Selesai
+-------------------------
+- Satuan Premium | Kemeja/Kaos | Warna Biru | 2.0 helai x Rp7000 = Rp14000
+- Layanan Tambahan | Parfum Laundry | Jasmine Premium | 1.0 5 ml x Rp5000 = Rp5000
+- Layanan Tambahan | Softener | Mawar | 2.0 5 ml x Rp2000 = Rp4000
+SUBTOTAL.: Rp23000
+Promo: Rp460
+
+TOTAL: Rp22540
+=========================
+
+Kode Transaksi : AMBA/260708/009
+Tanggal        : 2026-07-08
+Nama Pelanggan : Salman Alfarizi
+Telepon        : 09888888817111
+Alamat         : Kalimantan
+Metode Bayar   : Transfer
+Status         : Selesai
+-------------------------
+- Khusus Barang | Cuci Tas | Hitam dan Merah | 2.0 buah x Rp40000 = Rp80000
+- Antar Jemput | Antar Jemput > 10 KM | Bantul Kota | 1.0 layanan x Rp35000 = Rp35000
+- Layanan Tambahan | Parfum Laundry | Jasmine Premium | 3.0 5 ml x Rp5000 = Rp15000
+- Layanan Tambahan | Softener | Edelweiss | 2.0 5 ml x Rp4000 = Rp8000
+SUBTOTAL.: Rp138000
+Promo: Rp6900
+
+TOTAL: Rp131100
 =========================

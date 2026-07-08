@@ -1,2 +1,20 @@
-BN001|Sabun Baju|40|Liter|400|12/12/2027|PT Softener|5
-BN002|Pewangi Pakaian|90|Liter|5000|12/12/2027|PT Downy|5
+STK001|Parfum Sakura|100|ml|1000|2027-12-31|PT Aroma Nusantara|10
+STK002|Parfum Lavender|100|ml|1000|2027-12-31|PT Aroma Nusantara|10
+STK003|Parfum Ocean Breeze|100|ml|1100|2027-12-31|PT Aroma Nusantara|10
+STK004|Parfum Floral Garden|100|ml|1200|2027-12-31|PT Aroma Nusantara|10
+STK005|Parfum Baby Powder|100|ml|1100|2027-12-31|PT Aroma Nusantara|10
+STK006|Parfum Jasmine Premium|100|ml|1200|2027-12-31|PT Aroma Nusantara|10
+STK007|Parfum Downy Premium|100|ml|1100|2027-12-31|PT Aroma Nusantara|10
+STK008|Parfum Black Coffee|100|ml|1200|2027-12-31|PT Aroma Nusantara|10
+STK009|Softener Sakura|1000|ml|250|2028-06-30|PT Wings Surya|100
+STK010|Softener Lavender|1000|ml|250|2028-06-30|PT Wings Surya|100
+STK011|Softener Ocean Fresh|1000|ml|260|2028-06-30|PT Wings Surya|100
+STK012|Softener Sweet Orange|1000|ml|255|2028-06-30|PT Wings Surya|100
+STK013|Softener Blue Sky|1000|ml|260|2028-06-30|PT Wings Surya|100
+STK014|Deterjen Cair|20|Liter|18000|2028-12-31|PT Rinso Indonesia|5
+STK015|Plastik Laundry|500|Pcs|500|2030-12-31|CV Plastik Jaya|50
+STK016|Pewangi Lemon|100|ml|1000|2027-12-31|PT Aroma Nusantara|10
+STK017|Pewangi Mawar|100|ml|1000|2027-12-31|PT Aroma Nusantara|10
+STK018|Pewangi Melati|100|ml|1100|2027-12-31|PT Aroma Nusantara|10
+STK019|Pewangi Vanilla|100|ml|1200|2027-12-31|PT Aroma Nusantara|10
+STK020|Kantong Laundry Besar|200|Pcs|1000|2030-12-31|CV Plastik Jaya|20
