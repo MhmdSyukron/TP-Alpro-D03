@@ -1,4 +1,14 @@
 =========================
+Nama       : admin
+Username   : admin
+Password   : admin
+Role       : admin
+Poin       : 0
+Alamat     : admin
+No.Telepon : admin
+=========================
+
+=========================
 Nama       : Muhammad Syukron
 Username   : syukron
 Password   : 181

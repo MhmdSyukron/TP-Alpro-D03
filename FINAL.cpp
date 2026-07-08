@@ -5065,8 +5065,6 @@ void ManajemenPengeluaran::loadPengeluaran()
 
     void Admin::menuLayananTerlaris()
     {
-        cout << "\nMASUK KE MENU LAYANAN TERLARIS\n";
-        pauseScreen();
         
         int pilih;
 
