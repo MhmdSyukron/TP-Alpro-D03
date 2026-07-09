@@ -76,5 +76,3 @@ Role       : customer
 Poin       : 2490
 Alamat     : Kalimantan
 No.Telepon : 09888888817111
-=========================
-

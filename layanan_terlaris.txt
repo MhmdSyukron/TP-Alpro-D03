@@ -1,7 +1,7 @@
-Cuci Setrika|2
+Cuci Setrika|4
 Antar Jemput 5-10 KM|1
-Sakura Fresh|2
-Softener Melati|3
+Sakura Fresh|3
+Softener Melati|4
 Jaket/Sweater|1
 Antar Jemput < 5 KM|2
 Baby Powder|1
@@ -14,3 +14,4 @@ Ocean Breeze|1
 Same Day Service|1
 Antar Jemput > 10 KM|1
 Softener Magnolia|1
+

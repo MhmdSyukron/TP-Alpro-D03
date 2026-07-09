@@ -4498,15 +4498,15 @@ void ManajemenPengeluaran::loadPengeluaran()
         for(int i = 0; i < jumlahData; i++)
         {
             cout << left
-                << setw(5)  << i + 1
-                << setw(10) << data[i].idPengeluaran
-                << setw(15) << data[i].tanggal
-                << setw(18) << data[i].kategori
-                << setw(28) << data[i].namaBarang
-                << setw(8)  << data[i].jumlah
-                << setw(15) << ("Rp " + to_string((int)data[i].hargaSatuan))
-                << setw(15) << ("Rp " + to_string((int)data[i].totalPengeluaran))
-                << endl;
+			     << setw(5)  << i + 1
+			     << setw(10) << data[i].idPengeluaran
+			     << setw(15) << data[i].tanggal
+			     << setw(18) << data[i].kategori
+			     << setw(28) << data[i].namaBarang
+			     << setw(8)  << data[i].jumlah
+			     << "Rp " << setw(12) << fixed << setprecision(0) << data[i].hargaSatuan
+			     << "Rp " << setw(12) << fixed << setprecision(0) << data[i].totalPengeluaran
+			     << endl;
         }
 
         cout << string(111,'=') << endl;

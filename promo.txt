@@ -1,1 +1,2 @@
 Promo Opening|5|2026-07-08
+Promo Test|25|2026-07-10
