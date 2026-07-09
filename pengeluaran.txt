@@ -1,20 +1,21 @@
-PGL001|2026-07-01|Bahan Laundry|Parfum Sakura|100|1000|100000|Pembelian stok parfum
-PGL002|2026-07-01|Bahan Laundry|Parfum Lavender|100|1000|100000|Pembelian stok parfum
-PGL003|2026-07-02|Bahan Laundry|Parfum Ocean Breeze|100|1100|110000|Pembelian stok parfum
-PGL004|2026-07-02|Bahan Laundry|Parfum Floral Garden|100|1200|120000|Pembelian stok parfum
-PGL005|2026-07-03|Bahan Laundry|Parfum Baby Powder|100|1100|110000|Pembelian stok parfum
-PGL006|2026-07-03|Bahan Laundry|Parfum Jasmine Premium|100|1200|120000|Pembelian stok parfum
-PGL007|2026-07-04|Bahan Laundry|Parfum Downy Premium|100|1100|110000|Pembelian stok parfum
-PGL008|2026-07-04|Bahan Laundry|Parfum Black Coffee|100|1200|120000|Pembelian stok parfum
-PGL009|2026-07-05|Bahan Laundry|Softener Sakura|1000|250|250000|Pembelian stok softener
-PGL010|2026-07-05|Bahan Laundry|Softener Lavender|1000|250|250000|Pembelian stok softener
-PGL011|2026-07-06|Bahan Laundry|Softener Ocean Fresh|1000|260|260000|Pembelian stok softener
-PGL012|2026-07-06|Bahan Laundry|Softener Sweet Orange|1000|255|255000|Pembelian stok softener
-PGL013|2026-07-07|Bahan Laundry|Softener Blue Sky|1000|260|260000|Pembelian stok softener
-PGL014|2026-07-08|Operasional|Listrik|1|350000|350000|Pembayaran listrik
-PGL015|2026-07-08|Operasional|Air PDAM|1|180000|180000|Pembayaran air
-PGL016|2026-07-09|Transportasi|Bensin Motor Antar Jemput|10|15000|150000|Operasional antar jemput
-PGL017|2026-07-09|Maintenance|Servis Mesin Cuci|1|300000|300000|Perawatan mesin cuci
-PGL018|2026-07-10|Bahan Laundry|Deterjen Cair|20|18000|360000|Pembelian deterjen
-PGL019|2026-07-10|Bahan Laundry|Plastik Laundry|500|500|250000|Pembelian plastik laundry
-PGL020|2026-07-10|Lain-lain|Alat Tulis Kantor|5|12000|60000|Pembelian ATK
+PGL001|2026-07-01|Bahan Laundry|Sakura Fresh|100|1000|100000|Pembelian stok parfum
+PGL002|2026-07-01|Bahan Laundry|Lavender Bloom|100|1000|100000|Pembelian stok parfum
+PGL003|2026-07-02|Bahan Laundry|Ocean Breeze|100|1100|110000|Pembelian stok parfum
+PGL004|2026-07-02|Bahan Laundry|Floral Garden|100|1200|120000|Pembelian stok parfum
+PGL005|2026-07-03|Bahan Laundry|Baby Powder|100|1100|110000|Pembelian stok parfum
+PGL006|2026-07-03|Bahan Laundry|Jasmine Premium|100|1200|120000|Pembelian stok parfum
+PGL007|2026-07-04|Bahan Laundry|Softener Mawar|1000|250|250000|Pembelian stok softener
+PGL008|2026-07-04|Bahan Laundry|Softener Melati|1000|250|250000|Pembelian stok softener
+PGL009|2026-07-05|Bahan Laundry|Softener Lavender|1000|260|260000|Pembelian stok softener
+PGL010|2026-07-05|Bahan Laundry|Softener Sakura|1000|255|255000|Pembelian stok softener
+PGL011|2026-07-06|Bahan Laundry|Softener Anggrek|1000|260|260000|Pembelian stok softener
+PGL012|2026-07-06|Bahan Laundry|Softener Lily|1000|260|260000|Pembelian stok softener
+PGL013|2026-07-07|Bahan Laundry|Softener Edelweiss|1000|255|255000|Pembelian stok softener
+PGL014|2026-07-07|Bahan Laundry|Softener Magnolia|1000|260|260000|Pembelian stok softener
+PGL015|2026-07-08|Operasional|Listrik|1|350000|350000|Pembayaran listrik
+PGL016|2026-07-08|Operasional|Air PDAM|1|180000|180000|Pembayaran air
+PGL017|2026-07-09|Transportasi|Bensin Motor Antar Jemput|10|15000|150000|Operasional antar jemput
+PGL018|2026-07-09|Maintenance|Servis Mesin Cuci|1|300000|300000|Perawatan mesin cuci
+PGL019|2026-07-10|Bahan Laundry|Deterjen Cair|20|18000|360000|Pembelian deterjen
+PGL020|2026-07-10|Bahan Laundry|Plastik Laundry|500|500|250000|Pembelian plastik laundry
+PGL021|2026-07-10|Lain-lain|Alat Tulis Kantor|5|12000|60000|Pembelian ATK

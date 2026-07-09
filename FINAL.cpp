@@ -85,6 +85,7 @@ struct PesananItem {
     string estimasiSelesai;
     string kategoriLayanan;
     string unitSatuan;
+    int jumlahBahan;
 };
 
 struct User {
@@ -732,6 +733,8 @@ public:
     void menuAdmin();
 
     double hitungPendapatanHariIni();
+
+    void gunakanBahan(string namaBahan, int jumlah);
     
 };
 
@@ -799,6 +802,52 @@ void Admin::tampilkanHasilBinaryKode(const string& keyword) {
         cout << "Tidak ada riwayat transaksi yang cocok dengan kata kunci " << keyword << endl << endl;
     }
 	
+}
+
+void Admin::gunakanBahan(string namaBahan, int jumlah)
+{
+    loadStok();
+
+
+    int mlDipakai = jumlah * 10;
+
+    for(int i=0;i<jumlahBahan;i++)
+    {
+        if(bahan[i].namaBahan == namaBahan)
+        {
+            if(bahan[i].stok >= mlDipakai)
+            {
+                bahan[i].stok -= mlDipakai;
+
+                cout<<"\nStok "<<namaBahan<<" berkurang "
+                    <<mlDipakai<<" ml";
+
+                cout<<"\nSisa stok : "
+                    <<bahan[i].stok
+                    <<" ml\n";
+
+                if(bahan[i].stok <= bahan[i].minimalStok)
+                {
+                    cout<<"\n====================================";
+                    cout<<"\n PERINGATAN!";
+                    cout<<"\n Stok "<<namaBahan<<" tinggal "
+                        <<bahan[i].stok<<" ml";
+                    cout<<"\n Segera isi ulang stok.";
+                    cout<<"\n====================================\n";
+                }
+
+                saveStok();
+            }
+            else
+            {
+                cout<<"\nStok "<<namaBahan<<" tidak mencukupi!\n";
+            }
+
+            return;
+        }
+    }
+
+    cout<<"\nNama bahan tidak ditemukan!\n";
 }
 
 int Customer::loadUsers() {
@@ -1699,6 +1748,20 @@ void Customer::prosesMenuLayanan() {
 
                 }
 
+                Admin adminStok;
+
+                for(int i = 0; i < jumlahKeranjang; i++)
+                {
+                    if(keranjangLayanan[i].kategoriLayanan == "Parfum" ||
+                    keranjangLayanan[i].kategoriLayanan == "Softener")
+                    {
+                        adminStok.gunakanBahan(
+                            keranjangLayanan[i].namaLayanan,
+                            keranjangLayanan[i].jumlahBahan
+                        );
+                    }
+                }
+
                 tampilkanStruk(metode, kodeTransaksi);
 
                 simpanRiwayatTransaksi(metode, kodeTransaksi);
@@ -2165,72 +2228,79 @@ PesananItem Customer::prosesLayananPaketLangganan(int pilihan) {
         cout << "          PARFUM LAUNDRY" << endl;
         cout << string(45, '=') << endl;
 
-        cout << "1. Sakura Fresh      Rp3.000 / 5 ml" << endl;
-        cout << "2. Lavender Bloom    Rp3.000 / 5 ml" << endl;
-        cout << "3. Ocean Breeze      Rp3.000 / 5 ml" << endl;
-        cout << "4. Floral Garden     Rp4.000 / 5 ml" << endl;
-        cout << "5. Baby Powder       Rp4.000 / 5 ml" << endl;
-        cout << "6. Jasmine Premium   Rp5.000 / 5 ml" << endl;
+        cout << "1. Sakura Fresh      Rp3.000 / 10 ml" << endl;
+        cout << "2. Lavender Bloom    Rp3.000 / 10 ml" << endl;
+        cout << "3. Ocean Breeze      Rp3.000 / 10 ml" << endl;
+        cout << "4. Floral Garden     Rp4.000 / 10 ml" << endl;
+        cout << "5. Baby Powder       Rp4.000 / 10 ml" << endl;
+        cout << "6. Jasmine Premium   Rp5.000 / 10 ml" << endl;
 
         cout << "0. Kembali" << endl;
         cout << string(45, '=') << endl;
     }
+PesananItem Customer::prosesParfumLaundry(int pilihan)
+{
+    PesananItem item;
 
-    PesananItem Customer::prosesParfumLaundry(int pilihan) {
-        PesananItem item;
+    item.kategoriLayanan = "Parfum";
+    item.unitSatuan = "10 ml";
 
-        item.kategoriLayanan = "Layanan Tambahan";
-        item.namaLayanan = "Parfum Laundry";
-        item.unitSatuan = "5 ml";
+    cout << "\nJumlah Parfum (1 = 10 ml) : ";
+    cin >> item.jumlahBahan;
 
-        switch (pilihan) {
-
+    switch (pilihan)
+    {
         case 1:
             item.namaItem = "Sakura Fresh";
+            item.namaLayanan = "Sakura Fresh";
             item.hargaPerUnit = 3000;
             break;
 
         case 2:
             item.namaItem = "Lavender Bloom";
+            item.namaLayanan = "Lavender Bloom";
             item.hargaPerUnit = 3000;
             break;
 
         case 3:
             item.namaItem = "Ocean Breeze";
+            item.namaLayanan = "Ocean Breeze";
             item.hargaPerUnit = 3000;
             break;
 
         case 4:
             item.namaItem = "Floral Garden";
+            item.namaLayanan = "Floral Garden";
             item.hargaPerUnit = 4000;
             break;
 
         case 5:
             item.namaItem = "Baby Powder";
+            item.namaLayanan = "Baby Powder";
             item.hargaPerUnit = 4000;
             break;
 
         case 6:
             item.namaItem = "Jasmine Premium";
+            item.namaLayanan = "Jasmine Premium";
             item.hargaPerUnit = 5000;
             break;
 
         default:
             item.namaLayanan = "";
             return item;
-        }
-
-        cout << "\nParfum yang dipilih : " << item.namaItem << endl;
-
-        item.beratAtauJumlah = inputValidasi<double>(
-            "Masukkan jumlah parfum (1 = 5 ml) : "
-        );
-
-        item.subTotalHarga =
-            item.beratAtauJumlah * item.hargaPerUnit;
-
-        return item;
     }
+
+    cout << "\nParfum yang dipilih : " << item.namaItem << endl;
+
+    // jumlah yang dimasukkan customer
+    item.beratAtauJumlah = item.jumlahBahan;
+
+    // harga
+    item.subTotalHarga = item.jumlahBahan * item.hargaPerUnit;
+
+    return item;
+}
 
     void Customer::tampilkanSoftener()
     {
@@ -2239,14 +2309,14 @@ PesananItem Customer::prosesLayananPaketLangganan(int pilihan) {
         cout << "          SOFTENER BUNGA" << endl;
         cout << string(45,'=') << endl;
 
-        cout << "1. Mawar          Rp2.000 / 5 ml" << endl;
-        cout << "2. Melati         Rp2.000 / 5 ml" << endl;
-        cout << "3. Lavender       Rp2.000 / 5 ml" << endl;
-        cout << "4. Sakura         Rp3.000 / 5 ml" << endl;
-        cout << "5. Anggrek        Rp3.000 / 5 ml" << endl;
-        cout << "6. Lily           Rp3.000 / 5 ml" << endl;
-        cout << "7. Edelweiss      Rp4.000 / 5 ml" << endl;
-        cout << "8. Magnolia       Rp4.000 / 5 ml" << endl;
+        cout << "1. Mawar             Rp2.000 / 10 ml" << endl;
+        cout << "2. Melati            Rp2.000 / 10 ml" << endl;
+        cout << "3. Lavender          Rp2.000 / 10 ml" << endl;
+        cout << "4. Sakura            Rp3.000 / 10 ml" << endl;
+        cout << "5. Anggrek           Rp3.000 / 10 ml" << endl;
+        cout << "6. Lily              Rp3.000 / 10 ml" << endl;
+        cout << "7. Edelweiss         Rp4.000 / 10 ml" << endl;
+        cout << "8. Magnolia          Rp4.000 / 10 ml" << endl;
         cout << "0. Kembali" << endl;
         cout << string(45,'=') << endl;
     }
@@ -2255,62 +2325,71 @@ PesananItem Customer::prosesLayananPaketLangganan(int pilihan) {
     {
         PesananItem item;
 
-        item.kategoriLayanan = "Layanan Tambahan";
-        item.namaLayanan = "Softener";
-        item.unitSatuan = "5 ml";
+        item.kategoriLayanan = "Softener";
+        item.unitSatuan = "10 ml";
+
+        cout << "\nJumlah Softener (1 = 10 ml) : ";
+        cin >> item.jumlahBahan;
 
         switch(pilihan)
         {
             case 1:
-                item.namaItem="Mawar";
-                item.hargaPerUnit=2000;
+                item.namaItem = "Mawar";
+                item.namaLayanan = "Softener Mawar";
+                item.hargaPerUnit = 2000;
                 break;
 
             case 2:
-                item.namaItem="Melati";
-                item.hargaPerUnit=2000;
+                item.namaItem = "Melati";
+                item.namaLayanan = "Softener Melati";
+                item.hargaPerUnit = 2000;
                 break;
 
             case 3:
-                item.namaItem="Lavender";
-                item.hargaPerUnit=2000;
+                item.namaItem = "Lavender";
+                item.namaLayanan = "Softener Lavender";
+                item.hargaPerUnit = 2000;
                 break;
 
             case 4:
-                item.namaItem="Sakura";
-                item.hargaPerUnit=3000;
+                item.namaItem = "Sakura";
+                item.namaLayanan = "Softener Sakura";
+                item.hargaPerUnit = 3000;
                 break;
 
             case 5:
-                item.namaItem="Anggrek";
-                item.hargaPerUnit=3000;
+                item.namaItem = "Anggrek";
+                item.namaLayanan = "Softener Anggrek";
+                item.hargaPerUnit = 3000;
                 break;
 
             case 6:
-                item.namaItem="Lily";
-                item.hargaPerUnit=3000;
+                item.namaItem = "Lily";
+                item.namaLayanan = "Softener Lily";
+                item.hargaPerUnit = 3000;
                 break;
 
             case 7:
-                item.namaItem="Edelweiss";
-                item.hargaPerUnit=4000;
+                item.namaItem = "Edelweiss";
+                item.namaLayanan = "Softener Edelweiss";
+                item.hargaPerUnit = 4000;
                 break;
 
             case 8:
-                item.namaItem="Magnolia";
-                item.hargaPerUnit=4000;
+                item.namaItem = "Magnolia";
+                item.namaLayanan = "Softener Magnolia";
+                item.hargaPerUnit = 4000;
                 break;
 
             default:
-                item.namaLayanan="";
+                item.namaLayanan = "";
                 return item;
         }
 
         cout << "\nSoftener yang dipilih : "
             << item.namaItem << endl;
 
-        item.beratAtauJumlah =
-            inputValidasi<double>("Masukkan jumlah (1 = 5 ml): ");
+        item.beratAtauJumlah = item.jumlahBahan;
 
         item.subTotalHarga =
             item.beratAtauJumlah * item.hargaPerUnit;
