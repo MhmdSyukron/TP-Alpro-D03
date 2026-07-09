@@ -1,9 +1,9 @@
-STK001|Sakura Fresh|20|ml|1000|2027-12-31|PT Aroma Nusantara|10
+STK001|Sakura Fresh|100|ml|1000|2027-12-31|PT Aroma Nusantara|10
 STK002|Lavender Bloom|100|ml|1000|2027-12-31|PT Aroma Nusantara|10
 STK003|Ocean Breeze|80|ml|1100|2027-12-31|PT Aroma Nusantara|10
 STK004|Floral Garden|100|ml|1200|2027-12-31|PT Aroma Nusantara|10
 STK005|Baby Powder|70|ml|1100|2027-12-31|PT Aroma Nusantara|10
-STK006|Jasmine Premium|30|ml|1200|2027-12-31|PT Aroma Nusantara|10
+STK006|Jasmine Premium|70|ml|1200|2027-12-31|PT Aroma Nusantara|10
 STK007|Softener Mawar|980|ml|250|2028-06-30|PT Wings Surya|100
 STK008|Softener Melati|890|ml|250|2028-06-30|PT Wings Surya|100
 STK009|Softener Lavender|1000|ml|260|2028-06-30|PT Wings Surya|100
@@ -11,4 +11,4 @@ STK010|Softener Sakura|960|ml|255|2028-06-30|PT Wings Surya|100
 STK011|Softener Anggrek|1000|ml|260|2028-06-30|PT Wings Surya|100
 STK012|Softener Lily|970|ml|260|2028-06-30|PT Wings Surya|100
 STK013|Softener Edelweiss|1000|ml|255|2028-06-30|PT Wings Surya|100
-STK014|Softener Magnolia|930|ml|260|2028-06-30|PT Wings Surya|100
+STK014|Softener Magnolia|920|ml|260|2028-06-30|PT Wings Surya|100

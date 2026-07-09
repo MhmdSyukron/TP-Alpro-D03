@@ -1,2384 +1,2289 @@
-#include <iostream>
-#include <string>
-#include <iomanip>
-#include <limits>
-#include <ctime>    
-#include <sstream>
-#include <fstream>
-#include <cstdlib>
+    #include <iostream>
+    #include <string>
+    #include <iomanip>
+    #include <limits>
+    #include <ctime>    
+    #include <sstream>
+    #include <fstream>
+    #include <cstdlib>
 
-using namespace std;
+    using namespace std;
 
-//==============================================================
-// TEMPLATE TAMPILAN
-//==============================================================
+    //==============================================================
+    // TEMPLATE TAMPILAN
+    //==============================================================
 
-const int LEBAR = 60;
+    const int LEBAR = 60;
 
-void garisAtas()
-{
-    cout << string(LEBAR, '=') << endl;
-}
-
-void garisBawah()
-{
-    cout << string(LEBAR, '=') << endl;
-}
-
-void garisTengah()
-{
-    cout << string(LEBAR, '-') << endl;
-}
-
-void garis()
-{
-    garisTengah();
-}
-
-void tampilkanFooter()
-{
-    garisBawah();
-}
-
-void tampilkanHeader(const string &judul)
-{
-    garisAtas();
-
-    cout << setw(38) << "                       LAUNDRY AMBA" << endl;
-    cout << setw(45) << "                 Sistem Manajemen Laundry" << endl;
-
-    garisAtas();
-
-    cout << setw((LEBAR / 2) + (judul.length() / 2))
-         << judul << endl;
-
-    garisAtas();
-}
-
-void clearScreen() {
-    #ifdef _WIN32
-        system("cls");
-    #else
-        system("clear");
-    #endif
-}
-
-void pauseScreen() {
-    cout << "\nTekan Enter untuk melanjutkan...";
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-    cin.get();
-}
-
-const int MAX_USERS = 100;
-const int MAX_KERANJANG = 100;
-const int MAX_RIWAYAT = 100;
-const int MAX_PROMO = 100;
-const int MAX_LAYANAN = 100;
-const int MAX_PENGELUARAN = 500;
-
-struct PesananItem {
-    string namaLayanan;
-    string namaItem;
-    double beratAtauJumlah;
-    double hargaPerUnit;
-    double subTotalHarga;
-    string estimasiSelesai;
-    string kategoriLayanan;
-    string unitSatuan;
-    int jumlahBahan;
-};
-
-struct User {
-	string nama;
-    string noTelepon;
-    string alamat;
-    string tanggalPesan;
-    string username;
-    string password;
-    string role;
-    int poin;
-};
-
-struct Riwayat {
-    string tanggalLengkap;
-    string tanggal;
-    string bulan;
-    string tahun;
-    string kode;
-    string nama;
-    string telepon;
-    string alamat;
-    string metode;
-    string status;
-    string detailTransaksi;
-};
-
-struct Layanan {
-    string namaLayanan;
-    string kategori;
-    double harga;
-    string satuan;
-};
-
-struct Promo {
-    string namaPromo;
-    double diskon;
-    string masaBerlaku;
-};
-
-struct Pengeluaran {
-    string idPengeluaran;
-    string tanggal;
-    string kategori;
-    string namaBarang;
-    int jumlah;
-    double hargaSatuan;
-    double totalPengeluaran;
-    string keterangan;
-};
-
-struct StatistikLayanan
-{
-    string namaLayanan;
-    int jumlahDipilih;
-};
-
-struct daftarPromo {
-    string namaPromo;
-    double diskon;
-    string masaBerlaku;
-};
-
-// Tambahkan setelah struct Promo (sekitar line 70-80)
-
-// ==================== FITUR TAMBAHAN 1: PENGINGAT JADWAL ====================
-struct JadwalPengambilan {
-    string kodeTransaksi;
-    string tanggalEstimasiSelesai;
-    string tanggalPengambilan;
-    bool sudahDiambil;
-    int keterlambatanHari;
-};
-
-struct Notifikasi {
-    string judul;
-    string pesan;
-    string tanggal;
-    bool sudahDibaca;
-};
-
-// ==================== FITUR TAMBAHAN 2: MANAJEMEN PELANGGAN VIP ====================
-struct PelangganVIP {
-    string nama;
-    string noTelepon;
-    string levelVIP;
-    int totalTransaksi;
-    double totalBelanja;
-    double diskonKhusus;
-    string tanggalBergabungVIP;
-};
-
-// ==================== FITUR TAMBAHAN 3: MANAJEMEN KARYAWAN ====================
-struct Karyawan {
-    string idKaryawan;
-    string nama;
-    string posisi;
-    string noTelepon;
-    string alamat;
-    string tanggalBergabung;
-    double gaji;
-    int jumlahPelangganDitangani;
-    double ratingKinerja;
-    bool aktif;
-};
-
-struct Absensi {
-    string idKaryawan;
-    string tanggal;
-    string jamMasuk;
-    string jamKeluar;
-    bool hadir;
-};
-
-// ==================== FITUR TAMBAHAN 4: MANAJEMEN STOK ====================
-struct BahanLaundry {
-    string idBahan;
-    string namaBahan;
-    double stok;
-    string satuan;
-    double hargaPerUnit;
-    string tanggalKadaluarsa;
-    string supplier;
-    int minimalStok;
-};
-
-struct Peralatan {
-    string idPeralatan;
-    string namaPeralatan;
-    string jenis;
-    string kondisi;
-    string jadwalPerawatanTerakhir;
-    string jadwalPerawatanBerikutnya;
-};
-
-// ==================== FITUR TAMBAHAN 5: EVENT PROMO ====================
-struct EventPromo {
-    string namaEvent;
-    string tanggalMulai;
-    string tanggalSelesai;
-    string jenisEvent;
-    double diskonTambahan;
-    string minimumPembelian;
-};
-
-enum JenisLayanan {
-    CUCI_UMUM = 1,
-    SATUAN_PREMIUM,
-    KHUSUS_BARANG,
-    DRY_CLEANING,
-    EXPRESS,
-    ANTAR_JEMPUT,
-    PAKET_LANGGANAN,
-    LAYANAN_TAMBAHAN
-};
-
-void dataLayanan(Layanan layanan[], int &jumlahLayanan) {
-	jumlahLayanan = 0;
-
-    // Cuci Umum
-    layanan[jumlahLayanan++] = (Layanan){"Cuci Kering", "Cuci Umum", 5000, "kg"};
-    layanan[jumlahLayanan++] = (Layanan){"Cuci Basah", "Cuci Umum", 4000, "kg"};
-    layanan[jumlahLayanan++] = (Layanan){"Cuci Setrika", "Cuci Umum", 7000, "kg"};
-    layanan[jumlahLayanan++] = (Layanan){"Setrika Saja", "Cuci Umum", 4000, "kg"};
-
-    // Satuan Premium
-    layanan[jumlahLayanan++] = (Layanan){"Kemeja/Kaos", "Satuan Premium", 7000, "helai"};
-    layanan[jumlahLayanan++] = (Layanan){"Celana/Rok", "Satuan Premium", 7000, "helai"};
-    layanan[jumlahLayanan++] = (Layanan){"Jaket/Sweater", "Satuan Premium", 15000, "helai"};
-    layanan[jumlahLayanan++] = (Layanan){"Jas/Blazer", "Satuan Premium", 35000, "helai"};
-    layanan[jumlahLayanan++] = (Layanan){"Gaun/Kebaya", "Satuan Premium", 35000, "helai"};
-
-    // Khusus Barang
-    layanan[jumlahLayanan++] = (Layanan){"Cuci Sepatu Reguler", "Khusus Barang", 40000, "pasang"};
-    layanan[jumlahLayanan++] = (Layanan){"Cuci Sepatu Premium", "Khusus Barang", 65000, "pasang"};
-    layanan[jumlahLayanan++] = (Layanan){"Cuci Tas", "Khusus Barang", 40000, "buah"};
-    layanan[jumlahLayanan++] = (Layanan){"Cuci Helm", "Khusus Barang", 35000, "buah"};
-    layanan[jumlahLayanan++] = (Layanan){"Cuci Gorden", "Khusus Barang", 35000, "meter"};
-    layanan[jumlahLayanan++] = (Layanan){"Cuci Karpet", "Khusus Barang", 30000, "lembar"};
-    layanan[jumlahLayanan++] = (Layanan){"Sprei/Bedcover", "Khusus Barang", 25000, "set"};
-    layanan[jumlahLayanan++] = (Layanan){"Selimut/Bantal", "Khusus Barang", 25000, "buah"};
-
-    // Dry Cleaning
-    layanan[jumlahLayanan++] = (Layanan){"Jas Formal", "Dry Cleaning", 60000, "helai"};
-    layanan[jumlahLayanan++] = (Layanan){"Gaun Malam", "Dry Cleaning", 80000, "helai"};
-    layanan[jumlahLayanan++] = (Layanan){"Kebaya", "Dry Cleaning", 60000, "helai"};
-    layanan[jumlahLayanan++] = (Layanan){"Pakaian Sutera", "Dry Cleaning", 100000, "helai"};
-
-    // Express
-    layanan[jumlahLayanan++] = (Layanan){"Same Day Service", "Express", 20000, "kg"};
-    layanan[jumlahLayanan++] = (Layanan){"Next Day Service", "Express", 10000, "kg"};
-
-    // Antar Jemput
-    layanan[jumlahLayanan++] = (Layanan){"Antar Jemput < 5 KM", "Antar Jemput", 15000, "layanan"};
-    layanan[jumlahLayanan++] = (Layanan){"Antar Jemput 5-10 KM", "Antar Jemput", 25000, "layanan"};
-    layanan[jumlahLayanan++] = (Layanan){"Antar Jemput > 10 KM", "Antar Jemput", 35000, "layanan"};
-
-    // Paket Langganan
-    layanan[jumlahLayanan++] = (Layanan){"Paket 20kg/bulan", "Paket Langganan", 150000, "paket"};
-    layanan[jumlahLayanan++] = (Layanan){"Paket 40kg/bulan", "Paket Langganan", 280000, "paket"};
-    layanan[jumlahLayanan++] = (Layanan){"Paket >40kg/bulan", "Paket Langganan", 400000, "paket"};
-}
-
-string getTanggalSekarang() {
-    time_t now = time(0);
-    tm *ltm = localtime(&now);
-    char buffer[11];
-    strftime(buffer, sizeof(buffer), "%Y-%m-%d", ltm);
-    return string(buffer);
-}
-
-template<typename T>
-T inputValidasi(const string& pesan) {
-    T nilai;
-    while (true) {
-    	cout << pesan;
-        if (cin >> nilai && nilai >= 0) {
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            return nilai;
-        } else {
-            cout << "Input tidak valid!.\n\n";
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        }
+    void garisAtas()
+    {
+        cout << string(LEBAR, '=') << endl;
     }
-}
 
-int validasiInput(const int &min, const int &max, const string &pesan) {
-	int nilai;
-    while (true) {
-    	cout << pesan;
-        if (cin >> nilai && nilai >= min && nilai <= max) {
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            return nilai;
-        } else {
-            cout << "Input tidak valid!.\n\n";
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        }
+    void garisBawah()
+    {
+        cout << string(LEBAR, '=') << endl;
     }
-}
 
-string inputString(const string& pesan) {
-    string input;
-    cout << pesan;
-    getline(cin, input);
-    while (input.empty()) {
-        cout << "Input tidak boleh kosong! " << pesan;
-        getline(cin, input);
+    void garisTengah()
+    {
+        cout << string(LEBAR, '-') << endl;
     }
-    return input;
-}
 
-// Tambahkan setelah bagian enum JenisLayanan (sekitar line 100)
+    void garis()
+    {
+        garisTengah();
+    }
 
-// ==================== KELAS MANAJEMEN JADWAL ====================
-class ManajemenJadwal {
-private:
-    JadwalPengambilan daftarJadwal[200];
-    int jumlahJadwal;
-    Notifikasi daftarNotifikasi[500];
-    int jumlahNotifikasi;
-    
-public:
-    ManajemenJadwal() {
-        jumlahJadwal = 0;
-        jumlahNotifikasi = 0;
+    void tampilkanFooter()
+    {
+        garisBawah();
     }
-    
-    void tambahJadwalPengambilan(const string& kodeTransaksi, const string& estimasiSelesai) {
-        if (jumlahJadwal < 200) {
-            daftarJadwal[jumlahJadwal].kodeTransaksi = kodeTransaksi;
-            daftarJadwal[jumlahJadwal].tanggalEstimasiSelesai = estimasiSelesai;
-            daftarJadwal[jumlahJadwal].tanggalPengambilan = "";
-            daftarJadwal[jumlahJadwal].sudahDiambil = false;
-            daftarJadwal[jumlahJadwal].keterlambatanHari = 0;
-            jumlahJadwal++;
-            tambahNotifikasi("Jadwal Laundry", "Pesanan dengan kode " + kodeTransaksi + " diestimasi selesai pada " + estimasiSelesai);
-        }
+
+    void tampilkanHeader(const string &judul)
+    {
+        garisAtas();
+
+        cout << setw(38) << "                       LAUNDRY AMBA" << endl;
+        cout << setw(45) << "                 Sistem Manajemen Laundry" << endl;
+
+        garisAtas();
+
+        cout << setw((LEBAR / 2) + (judul.length() / 2))
+            << judul << endl;
+
+        garisAtas();
     }
-    
-    void tambahNotifikasi(const string& judul, const string& pesan) {
-        if (jumlahNotifikasi < 500) {
-            daftarNotifikasi[jumlahNotifikasi].judul = judul;
-            daftarNotifikasi[jumlahNotifikasi].pesan = pesan;
-            daftarNotifikasi[jumlahNotifikasi].tanggal = getTanggalSekarang();
-            daftarNotifikasi[jumlahNotifikasi].sudahDibaca = false;
-            jumlahNotifikasi++;
-        }
+
+    void clearScreen() {
+        #ifdef _WIN32
+            system("cls");
+        #else
+            system("clear");
+        #endif
     }
-    
-    void lihatNotifikasi() {
-        if (jumlahNotifikasi == 0) {
-            cout << "\nTidak ada notifikasi.\n";
-            return;
-        }
-        
-        cout << "\n" << string(50, '=') << endl;
-        cout << "              NOTIFIKASI" << endl;
-        cout << string(50, '=') << endl;
-        
-        for (int i = 0; i < jumlahNotifikasi; i++) {
-            if (!daftarNotifikasi[i].sudahDibaca) {
-                cout << "?? ";
+
+    void pauseScreen() {
+        cout << "\nTekan Enter untuk melanjutkan...";
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.get();
+    }
+
+    const int MAX_USERS = 100;
+    const int MAX_KERANJANG = 100;
+    const int MAX_RIWAYAT = 100;
+    const int MAX_PROMO = 100;
+    const int MAX_LAYANAN = 100;
+    const int MAX_PENGELUARAN = 500;
+
+    struct PesananItem {
+        string namaLayanan;
+        string namaItem;
+        double beratAtauJumlah;
+        double hargaPerUnit;
+        double subTotalHarga;
+        string estimasiSelesai;
+        string kategoriLayanan;
+        string unitSatuan;
+        int jumlahBahan;
+    };
+
+    struct User {
+        string nama;
+        string noTelepon;
+        string alamat;
+        string tanggalPesan;
+        string username;
+        string password;
+        string role;
+        int poin;
+    };
+
+    struct Riwayat {
+        string tanggalLengkap;
+        string tanggal;
+        string bulan;
+        string tahun;
+        string kode;
+        string nama;
+        string telepon;
+        string alamat;
+        string metode;
+        string status;
+        string detailTransaksi;
+    };
+
+    struct Layanan {
+        string namaLayanan;
+        string kategori;
+        double harga;
+        string satuan;
+    };
+
+    struct Promo {
+        string namaPromo;
+        double diskon;
+        string masaBerlaku;
+    };
+
+    struct Pengeluaran {
+        string idPengeluaran;
+        string tanggal;
+        string kategori;
+        string namaBarang;
+        int jumlah;
+        double hargaSatuan;
+        double totalPengeluaran;
+        string keterangan;
+    };
+
+    struct StatistikLayanan
+    {
+        string namaLayanan;
+        int jumlahDipilih;
+    };
+
+    struct daftarPromo {
+        string namaPromo;
+        double diskon;
+        string masaBerlaku;
+    };
+
+    // Tambahkan setelah struct Promo (sekitar line 70-80)
+
+    // ==================== FITUR TAMBAHAN 1: PENGINGAT JADWAL ====================
+    struct JadwalPengambilan {
+        string kodeTransaksi;
+        string tanggalEstimasiSelesai;
+        string tanggalPengambilan;
+        bool sudahDiambil;
+        int keterlambatanHari;
+    };
+
+    struct Notifikasi {
+        string judul;
+        string pesan;
+        string tanggal;
+        bool sudahDibaca;
+    };
+
+    // ==================== FITUR TAMBAHAN 2: MANAJEMEN PELANGGAN VIP ====================
+    struct PelangganVIP {
+        string nama;
+        string noTelepon;
+        string levelVIP;
+        int totalTransaksi;
+        double totalBelanja;
+        double diskonKhusus;
+        string tanggalBergabungVIP;
+    };
+
+    // ==================== FITUR TAMBAHAN 3: MANAJEMEN KARYAWAN ====================
+    struct Karyawan {
+        string idKaryawan;
+        string nama;
+        string posisi;
+        string noTelepon;
+        string alamat;
+        string tanggalBergabung;
+        double gaji;
+        int jumlahPelangganDitangani;
+        double ratingKinerja;
+        bool aktif;
+    };
+
+    struct Absensi {
+        string idKaryawan;
+        string tanggal;
+        string jamMasuk;
+        string jamKeluar;
+        bool hadir;
+    };
+
+    // ==================== FITUR TAMBAHAN 4: MANAJEMEN STOK ====================
+    struct BahanLaundry {
+        string idBahan;
+        string namaBahan;
+        double stok;
+        string satuan;
+        double hargaPerUnit;
+        string tanggalKadaluarsa;
+        string supplier;
+        int minimalStok;
+    };
+
+    struct Peralatan {
+        string idPeralatan;
+        string namaPeralatan;
+        string jenis;
+        string kondisi;
+        string jadwalPerawatanTerakhir;
+        string jadwalPerawatanBerikutnya;
+    };
+
+    // ==================== FITUR TAMBAHAN 5: EVENT PROMO ====================
+    struct EventPromo {
+        string namaEvent;
+        string tanggalMulai;
+        string tanggalSelesai;
+        string jenisEvent;
+        double diskonTambahan;
+        string minimumPembelian;
+    };
+
+    enum JenisLayanan {
+        CUCI_UMUM = 1,
+        SATUAN_PREMIUM,
+        KHUSUS_BARANG,
+        DRY_CLEANING,
+        EXPRESS,
+        ANTAR_JEMPUT,
+        PAKET_LANGGANAN,
+        LAYANAN_TAMBAHAN
+    };
+
+    void dataLayanan(Layanan layanan[], int &jumlahLayanan) {
+        jumlahLayanan = 0;
+
+        // Cuci Umum
+        layanan[jumlahLayanan++] = (Layanan){"Cuci Kering", "Cuci Umum", 5000, "kg"};
+        layanan[jumlahLayanan++] = (Layanan){"Cuci Basah", "Cuci Umum", 4000, "kg"};
+        layanan[jumlahLayanan++] = (Layanan){"Cuci Setrika", "Cuci Umum", 7000, "kg"};
+        layanan[jumlahLayanan++] = (Layanan){"Setrika Saja", "Cuci Umum", 4000, "kg"};
+
+        // Satuan Premium
+        layanan[jumlahLayanan++] = (Layanan){"Kemeja/Kaos", "Satuan Premium", 7000, "helai"};
+        layanan[jumlahLayanan++] = (Layanan){"Celana/Rok", "Satuan Premium", 7000, "helai"};
+        layanan[jumlahLayanan++] = (Layanan){"Jaket/Sweater", "Satuan Premium", 15000, "helai"};
+        layanan[jumlahLayanan++] = (Layanan){"Jas/Blazer", "Satuan Premium", 35000, "helai"};
+        layanan[jumlahLayanan++] = (Layanan){"Gaun/Kebaya", "Satuan Premium", 35000, "helai"};
+
+        // Khusus Barang
+        layanan[jumlahLayanan++] = (Layanan){"Cuci Sepatu Reguler", "Khusus Barang", 40000, "pasang"};
+        layanan[jumlahLayanan++] = (Layanan){"Cuci Sepatu Premium", "Khusus Barang", 65000, "pasang"};
+        layanan[jumlahLayanan++] = (Layanan){"Cuci Tas", "Khusus Barang", 40000, "buah"};
+        layanan[jumlahLayanan++] = (Layanan){"Cuci Helm", "Khusus Barang", 35000, "buah"};
+        layanan[jumlahLayanan++] = (Layanan){"Cuci Gorden", "Khusus Barang", 35000, "meter"};
+        layanan[jumlahLayanan++] = (Layanan){"Cuci Karpet", "Khusus Barang", 30000, "lembar"};
+        layanan[jumlahLayanan++] = (Layanan){"Sprei/Bedcover", "Khusus Barang", 25000, "set"};
+        layanan[jumlahLayanan++] = (Layanan){"Selimut/Bantal", "Khusus Barang", 25000, "buah"};
+
+        // Dry Cleaning
+        layanan[jumlahLayanan++] = (Layanan){"Jas Formal", "Dry Cleaning", 60000, "helai"};
+        layanan[jumlahLayanan++] = (Layanan){"Gaun Malam", "Dry Cleaning", 80000, "helai"};
+        layanan[jumlahLayanan++] = (Layanan){"Kebaya", "Dry Cleaning", 60000, "helai"};
+        layanan[jumlahLayanan++] = (Layanan){"Pakaian Sutera", "Dry Cleaning", 100000, "helai"};
+
+        // Express
+        layanan[jumlahLayanan++] = (Layanan){"Same Day Service", "Express", 20000, "kg"};
+        layanan[jumlahLayanan++] = (Layanan){"Next Day Service", "Express", 10000, "kg"};
+
+        // Antar Jemput
+        layanan[jumlahLayanan++] = (Layanan){"Antar Jemput < 5 KM", "Antar Jemput", 15000, "layanan"};
+        layanan[jumlahLayanan++] = (Layanan){"Antar Jemput 5-10 KM", "Antar Jemput", 25000, "layanan"};
+        layanan[jumlahLayanan++] = (Layanan){"Antar Jemput > 10 KM", "Antar Jemput", 35000, "layanan"};
+
+        // Paket Langganan
+        layanan[jumlahLayanan++] = (Layanan){"Paket 20kg/bulan", "Paket Langganan", 150000, "paket"};
+        layanan[jumlahLayanan++] = (Layanan){"Paket 40kg/bulan", "Paket Langganan", 280000, "paket"};
+        layanan[jumlahLayanan++] = (Layanan){"Paket >40kg/bulan", "Paket Langganan", 400000, "paket"};
+    }
+
+    string getTanggalSekarang() {
+        time_t now = time(0);
+        tm *ltm = localtime(&now);
+        char buffer[11];
+        strftime(buffer, sizeof(buffer), "%Y-%m-%d", ltm);
+        return string(buffer);
+    }
+
+    template<typename T>
+    T inputValidasi(const string& pesan) {
+        T nilai;
+        while (true) {
+            cout << pesan;
+            if (cin >> nilai && nilai >= 0) {
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                return nilai;
             } else {
-                cout << "?? ";
+                cout << "Input tidak valid!.\n\n";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
-            cout << "[" << daftarNotifikasi[i].tanggal << "] ";
-            cout << daftarNotifikasi[i].judul << ": ";
-            cout << daftarNotifikasi[i].pesan << endl;
-        }
-        cout << string(50, '=') << endl;
-        
-        for (int i = 0; i < jumlahNotifikasi; i++) {
-            daftarNotifikasi[i].sudahDibaca = true;
         }
     }
-    
-    void periksaKeterlambatan() {
-        string today = getTanggalSekarang();
-        int totalTerlambat = 0;
+
+    int validasiInput(const int &min, const int &max, const string &pesan) {
+        int nilai;
+        while (true) {
+            cout << pesan;
+            if (cin >> nilai && nilai >= min && nilai <= max) {
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                return nilai;
+            } else {
+                cout << "Input tidak valid!.\n\n";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            }
+        }
+    }
+
+    string inputString(const string& pesan) {
+        string input;
+        cout << pesan;
+        getline(cin, input);
+        while (input.empty()) {
+            cout << "Input tidak boleh kosong! " << pesan;
+            getline(cin, input);
+        }
+        return input;
+    }
+
+    // Tambahkan setelah bagian enum JenisLayanan (sekitar line 100)
+
+    // ==================== KELAS MANAJEMEN JADWAL ====================
+    class ManajemenJadwal {
+    private:
+        JadwalPengambilan daftarJadwal[200];
+        int jumlahJadwal;
+        Notifikasi daftarNotifikasi[500];
+        int jumlahNotifikasi;
         
-        for (int i = 0; i < jumlahJadwal; i++) {
-            if (!daftarJadwal[i].sudahDiambil && daftarJadwal[i].tanggalEstimasiSelesai < today) {
-                daftarJadwal[i].keterlambatanHari++;
-                if (daftarJadwal[i].keterlambatanHari == 1) {
-                    tambahNotifikasi("PERINGATAN", "Pesanan " + daftarJadwal[i].kodeTransaksi + " sudah melebihi estimasi selesai!");
-                    totalTerlambat++;
+    public:
+        ManajemenJadwal() {
+            jumlahJadwal = 0;
+            jumlahNotifikasi = 0;
+        }
+        
+        void tambahJadwalPengambilan(const string& kodeTransaksi, const string& estimasiSelesai) {
+            if (jumlahJadwal < 200) {
+                daftarJadwal[jumlahJadwal].kodeTransaksi = kodeTransaksi;
+                daftarJadwal[jumlahJadwal].tanggalEstimasiSelesai = estimasiSelesai;
+                daftarJadwal[jumlahJadwal].tanggalPengambilan = "";
+                daftarJadwal[jumlahJadwal].sudahDiambil = false;
+                daftarJadwal[jumlahJadwal].keterlambatanHari = 0;
+                jumlahJadwal++;
+                tambahNotifikasi("Jadwal Laundry", "Pesanan dengan kode " + kodeTransaksi + " diestimasi selesai pada " + estimasiSelesai);
+            }
+        }
+        
+        void tambahNotifikasi(const string& judul, const string& pesan) {
+            if (jumlahNotifikasi < 500) {
+                daftarNotifikasi[jumlahNotifikasi].judul = judul;
+                daftarNotifikasi[jumlahNotifikasi].pesan = pesan;
+                daftarNotifikasi[jumlahNotifikasi].tanggal = getTanggalSekarang();
+                daftarNotifikasi[jumlahNotifikasi].sudahDibaca = false;
+                jumlahNotifikasi++;
+            }
+        }
+        
+        void lihatNotifikasi() {
+            if (jumlahNotifikasi == 0) {
+                cout << "\nTidak ada notifikasi.\n";
+                return;
+            }
+            
+            cout << "\n" << string(50, '=') << endl;
+            cout << "              NOTIFIKASI" << endl;
+            cout << string(50, '=') << endl;
+            
+            for (int i = 0; i < jumlahNotifikasi; i++) {
+                if (!daftarNotifikasi[i].sudahDibaca) {
+                    cout << "?? ";
+                } else {
+                    cout << "?? ";
+                }
+                cout << "[" << daftarNotifikasi[i].tanggal << "] ";
+                cout << daftarNotifikasi[i].judul << ": ";
+                cout << daftarNotifikasi[i].pesan << endl;
+            }
+            cout << string(50, '=') << endl;
+            
+            for (int i = 0; i < jumlahNotifikasi; i++) {
+                daftarNotifikasi[i].sudahDibaca = true;
+            }
+        }
+        
+        void periksaKeterlambatan() {
+            string today = getTanggalSekarang();
+            int totalTerlambat = 0;
+            
+            for (int i = 0; i < jumlahJadwal; i++) {
+                if (!daftarJadwal[i].sudahDiambil && daftarJadwal[i].tanggalEstimasiSelesai < today) {
+                    daftarJadwal[i].keterlambatanHari++;
+                    if (daftarJadwal[i].keterlambatanHari == 1) {
+                        tambahNotifikasi("PERINGATAN", "Pesanan " + daftarJadwal[i].kodeTransaksi + " sudah melebihi estimasi selesai!");
+                        totalTerlambat++;
+                    }
                 }
             }
+            
+            if (totalTerlambat > 0) {
+                cout << "\n?? Ada " << totalTerlambat << " pesanan yang mengalami keterlambatan.\n";
+            }
         }
         
-        if (totalTerlambat > 0) {
-            cout << "\n?? Ada " << totalTerlambat << " pesanan yang mengalami keterlambatan.\n";
+        void konfirmasiPengambilan(const string& kodeTransaksi) {
+            for (int i = 0; i < jumlahJadwal; i++) {
+                if (daftarJadwal[i].kodeTransaksi == kodeTransaksi) {
+                    daftarJadwal[i].sudahDiambil = true;
+                    daftarJadwal[i].tanggalPengambilan = getTanggalSekarang();
+                    cout << "\n? Pengambilan laundry dengan kode " << kodeTransaksi << " telah dikonfirmasi.\n";
+                    tambahNotifikasi("Pengambilan", "Laundry dengan kode " + kodeTransaksi + " telah diambil oleh pelanggan.");
+                    return;
+                }
+            }
+            cout << "\n? Kode transaksi tidak ditemukan.\n";
+        }
+        
+        void tampilanKalenderJadwal() {
+            cout << "\n" << string(60, '=') << endl;
+            cout << "              KALENDER JADWAL LAUNDRY" << endl;
+            cout << string(60, '=') << endl;
+            
+            string today = getTanggalSekarang();
+            
+            cout << "\n?? Pesanan yang Sudah Selesai:\n";
+            bool adaSelesai = false;
+            for (int i = 0; i < jumlahJadwal; i++) {
+                if (daftarJadwal[i].tanggalEstimasiSelesai <= today && !daftarJadwal[i].sudahDiambil) {
+                    cout << "   ? " << daftarJadwal[i].kodeTransaksi << " (Selesai: " << daftarJadwal[i].tanggalEstimasiSelesai << ")" << endl;
+                    adaSelesai = true;
+                }
+            }
+            if (!adaSelesai) cout << "   Tidak ada pesanan yang sudah selesai.\n";
+            
+            cout << "\n?? Pesanan yang Masih Diproses:\n";
+            bool adaProses = false;
+            for (int i = 0; i < jumlahJadwal; i++) {
+                if (daftarJadwal[i].tanggalEstimasiSelesai > today && !daftarJadwal[i].sudahDiambil) {
+                    cout << "   ? " << daftarJadwal[i].kodeTransaksi << " (Estimasi: " << daftarJadwal[i].tanggalEstimasiSelesai << ")" << endl;
+                    adaProses = true;
+                }
+            }
+            if (!adaProses) cout << "   Tidak ada pesanan yang sedang diproses.\n";
+        }
+    };
+
+
+    class ManajemenPengeluaran {
+        private:
+            Pengeluaran data[MAX_PENGELUARAN];
+            int jumlahData;
+
+        public:
+
+            ManajemenPengeluaran()
+            {
+                jumlahData = 0;
+            }
+
+            // ===== MENU =====
+            void menuPengeluaran();
+
+            // ===== FILE =====
+            void loadPengeluaran();
+            void savePengeluaran();
+
+            // ===== CRUD =====
+            void tambahPengeluaran();
+            void lihatPengeluaran();
+            void editPengeluaran();
+            void hapusPengeluaran();
+            void cariPengeluaran();
+
+            // ===== LAPORAN =====
+            void laporanHarian();
+            void laporanMingguan();
+            void laporanBulanan();
+
+            double totalPengeluaranHariIni();
+
+            double totalPengeluaran();
+    };
+
+    class Customer {
+    public:
+        int indeksAktif;
+        User user[MAX_USERS];
+        Riwayat riwayat[MAX_RIWAYAT];
+        int jumlahPengguna;
+        Layanan layanan[MAX_LAYANAN];
+        int jumlahLayanan;
+        int jumlahData;
+        
+        Customer() {
+            jumlahPengguna = 0;
+            indeksAktif = -1;
+            jumlahData = 0;
+            dataLayanan(layanan, jumlahLayanan);
+        }
+
+        /*int binarySearchLayanan(const string& namaLayananDicari);
+        void tampilkanHasilBinaryLayanan(const string& namaLayananDicari);
+        void sortLayananByNama();*/
+        
+        // Tambahkan di bagian public class Customer (sekitar line 170)
+
+        // Fitur baru
+        ManajemenJadwal manajemenJadwal;
+        
+        
+        void checkStatusCucian();
+        
+        void cariLayananByNama(const string &keyword);
+        
+        int loadUsers();
+        
+        void saveUsers();
+        
+        int login(string& role);
+        
+        int registrasiPengguna();
+        
+        void pengaturanAkun(User userArr[], int &indeks, int jumlahPengguna);
+        
+        void tampilkanAkunMenu();
+        
+        void ulasanRating();
+        
+        void lihatPoin();
+        
+        void tampilkanInformasiAkun();
+
+        PesananItem keranjangLayanan[MAX_KERANJANG];
+        
+        int jumlahKeranjang;
+        
+        double potonganPoin;
+        
+        double totalBiaya;
+        
+        double totalSetelahPromo;
+        
+        double TOTAL;
+
+        void kosongkanKeranjang();
+        void tambahKeKeranjang(const PesananItem& item);
+        void tampilkanKeranjang();
+        void hapusItemKeranjang();
+        void tampilkanRingkasanItem(const PesananItem& item);
+        
+        void loadRiwayatTransaksi();
+        
+        void prosesMenuLayanan();
+        
+        void tampilkanDaftarLayanan();
+        
+        void tampilkanLayananCuciUmum();
+        
+        PesananItem prosesLayananCuciUmum(int pilihan);
+        
+        void tampilkanLayananSatuanPremium();
+        
+        PesananItem prosesLayananSatuanPremium(int pilihan);
+        
+        void tampilkanLayananKhususBarang();
+        
+        PesananItem prosesLayananKhususBarang(int pilihan);
+        
+        void tampilkanLayananDryCleaning();
+        
+        PesananItem prosesLayananDryCleaning(int pilihan);
+        
+        void tampilkanLayananExpress();
+        
+        PesananItem prosesLayananExpress(int pilihan);
+        
+        void tampilkanLayananAntarJemput();
+        
+        PesananItem prosesLayananAntarJemput(int pilihan);
+        
+        void tampilkanLayananPaketLangganan();
+        
+        PesananItem prosesLayananPaketLangganan(int pilihan);
+
+
+        // ===== Layanan Tambahan =====
+        void tampilkanLayananTambahan();
+        
+        void tampilkanParfumLaundry();
+
+        PesananItem prosesParfumLaundry(int pilihan);
+
+        void tampilkanSoftener();
+        
+        PesananItem prosesSoftener(int pilihan);
+
+        
+        Promo daftarPromo[MAX_PROMO];
+        
+        int jumlahPromo;
+        
+        void loadPromo();
+        
+        void checkPromo();
+
+        void tampilkanStruk(const string& metodePembayaran, const string& kodeTransaksi);
+        void simpanRiwayatTransaksi(const string& metodePembayaran, const string& kodeTransaksi);
+
+        void tampilkanMenuCustomer();
+        void prosesMenuCustomer();
+    };
+
+    class Admin : public Customer {
+    public:
+        int jumlahLayanan;
+
+        Admin() {
+            jumlahPengguna = 0;
+            indeksAktif = -1;
+            jumlahData = 0;
+            jumlahLayanan = 0;
+            jumlahStatistik = 0; 
+            jumlahBahan = 0;
+        }
+
+        int jumlahData;
+        Riwayat riwayat[MAX_RIWAYAT];
+        Promo daftarPromo[MAX_PROMO];
+
+        ManajemenPengeluaran pengeluaran;
+        
+        StatistikLayanan statistik[100];
+        int jumlahStatistik;
+
+        BahanLaundry bahan[100];
+        int jumlahBahan;
+
+        void menuStok();
+        void loadStok();
+        void saveStok();
+        void lihatStok();
+        void tambahStok();
+        void editStok();
+        void kurangiStok();
+        void cariStok();
+
+        void loadStatistikLayanan();
+        void saveStatistikLayanan();
+        void updateStatistikLayanan(const string& namaLayanan);
+        void tampilkanLayananTerlaris();
+        void resetStatistikLayanan();
+        void cariLayananTerlaris();
+        void top5Layanan();
+        void menuLayananTerlaris();
+
+        void sortLayananTerlaris();
+
+        void sortRiwayatByTanggalTerbaru();
+        
+        void loadRiwayatTransaksi();
+        
+        void PengaturanAkun();
+        
+        void cariUserLinear(const string& keyword);
+        
+        void sortKodeTransaksi();
+        
+        int binarySearchRiwayat(const string& keyword);
+        
+        void tampilkanHasilBinaryKode(const string& keyword);
+        
+        void tampilkanDashboard();
+        
+        void bacaRiwayatLayanan();
+        
+        void lihatUserAdmin();
+        
+        void lihatUserPengguna();
+        
+        void dataUser();
+        
+        void tampilkanHasilPencarian(bool ditemukan[], const string& jenisPencarian);
+        
+        void cariByTanggal();
+        
+        void cariByNama();
+        
+        void cariByKodeTransaksi();
+        
+        void cariByStatus();
+        
+        void menuCariRiwayat();
+        
+        void updateStatus();
+        
+        void simpanRiwayatKeFile();
+        
+        void hitungPendapatanBulanan();
+        
+        void ulasanRating();
+        
+        void buatPromo();
+        
+        void lihatPromo();
+        
+        void menuPromo();
+        
+        void hapusPromo();
+
+        void dashboardKeuangan();
+
+        void menuAdmin();
+
+        double hitungPendapatanHariIni();
+
+        void gunakanBahan(string namaBahan, int jumlah);
+        
+    };
+
+    class LaundrySystem {
+    public:
+        User user[MAX_USERS];
+        int jumlahPengguna;
+        int indeksAktif;
+        string role;
+        Customer customer;
+        Admin admin;
+
+        LaundrySystem() {
+            jumlahPengguna = 0;
+            indeksAktif = -1;
+            role = "";
+        }
+
+        void tampilkanHeader();
+        void tampilkanMenuUtama();
+        void prosesMenuUtama();
+    };
+
+    // Insertion Sort untuk mengurutkan riwayat berdasarkan kode transaksi 
+    void Admin::sortKodeTransaksi() {
+        for (int i = 1; i < jumlahData; ++i) {
+            Riwayat temp = riwayat[i];
+            int j = i - 1;
+
+            while (j >= 0 && riwayat[j].kode > temp.kode) {
+                riwayat[j + 1] = riwayat[j];
+                --j;
+            }
+
+            riwayat[j + 1] = temp;
         }
     }
-    
-    void konfirmasiPengambilan(const string& kodeTransaksi) {
-        for (int i = 0; i < jumlahJadwal; i++) {
-            if (daftarJadwal[i].kodeTransaksi == kodeTransaksi) {
-                daftarJadwal[i].sudahDiambil = true;
-                daftarJadwal[i].tanggalPengambilan = getTanggalSekarang();
-                cout << "\n? Pengambilan laundry dengan kode " << kodeTransaksi << " telah dikonfirmasi.\n";
-                tambahNotifikasi("Pengambilan", "Laundry dengan kode " + kodeTransaksi + " telah diambil oleh pelanggan.");
+
+    // Binary search untuk mencari riwayat transaksi berdasarkan kode transaksi
+    int Admin::binarySearchRiwayat(const string& keyword) {
+        sortKodeTransaksi();
+        int kiri = 0;
+        int kanan = jumlahData - 1;
+        while (kiri <= kanan) {
+            int tengah = (kanan + kiri) / 2;
+            string namaTengah = riwayat[tengah].kode;
+            if (namaTengah == keyword) {
+                return tengah;
+            } else if (namaTengah < keyword) {
+                kiri = tengah + 1;
+            } else {
+                kanan = tengah - 1;
+            }
+        }
+        return -1;
+    }
+
+    // Tampilkan hasil search
+    void Admin::tampilkanHasilBinaryKode(const string& keyword) {
+        int idx = binarySearchRiwayat(keyword);
+        if (idx != -1) {
+            cout << "\n--- RIWAYAT DITEMUKAN ---" << endl;
+            cout << riwayat[idx].detailTransaksi << endl;
+        } else {
+            cout << "Tidak ada riwayat transaksi yang cocok dengan kata kunci " << keyword << endl << endl;
+        }
+        
+    }
+
+    void Admin::gunakanBahan(string namaBahan, int jumlah)
+    {
+        loadStok();
+
+
+        int mlDipakai = jumlah * 10;
+
+        for(int i=0;i<jumlahBahan;i++)
+        {
+            if(bahan[i].namaBahan == namaBahan)
+            {
+                if(bahan[i].stok >= mlDipakai)
+                {
+                    bahan[i].stok -= mlDipakai;
+
+                    cout<<"\nStok "<<namaBahan<<" berkurang "
+                        <<mlDipakai<<" ml";
+
+                    cout<<"\nSisa stok : "
+                        <<bahan[i].stok
+                        <<" ml\n";
+
+                    if(bahan[i].stok <= bahan[i].minimalStok)
+                    {
+                        cout<<"\n====================================";
+                        cout<<"\n PERINGATAN!";
+                        cout<<"\n Stok "<<namaBahan<<" tinggal "
+                            <<bahan[i].stok<<" ml";
+                        cout<<"\n Segera isi ulang stok.";
+                        cout<<"\n====================================\n";
+                    }
+
+                    saveStok();
+                }
+                else
+                {
+                    cout<<"\nStok "<<namaBahan<<" tidak mencukupi!\n";
+                }
+
                 return;
             }
         }
-        cout << "\n? Kode transaksi tidak ditemukan.\n";
+
+        cout<<"\nNama bahan tidak ditemukan!\n";
     }
-    
-    void tampilanKalenderJadwal() {
-        cout << "\n" << string(60, '=') << endl;
-        cout << "              KALENDER JADWAL LAUNDRY" << endl;
-        cout << string(60, '=') << endl;
-        
-        string today = getTanggalSekarang();
-        
-        cout << "\n?? Pesanan yang Sudah Selesai:\n";
-        bool adaSelesai = false;
-        for (int i = 0; i < jumlahJadwal; i++) {
-            if (daftarJadwal[i].tanggalEstimasiSelesai <= today && !daftarJadwal[i].sudahDiambil) {
-                cout << "   ? " << daftarJadwal[i].kodeTransaksi << " (Selesai: " << daftarJadwal[i].tanggalEstimasiSelesai << ")" << endl;
-                adaSelesai = true;
+
+    int Customer::loadUsers() {
+        ifstream file("users.txt");
+
+        if (!file.is_open()) {
+            cout << "ERROR: users.txt tidak bisa dibuka!" << endl;
+            return 0;
+        }
+
+        User tempUser;
+        int count = 0;
+        string line;
+
+        while (getline(file, line)) {
+            if (line.find("Nama") != string::npos) {
+                tempUser.nama = line.substr(line.find(":") + 2);
+                getline(file, line); tempUser.username = line.substr(line.find(":") + 2);
+                getline(file, line); tempUser.password = line.substr(line.find(":") + 2);
+                getline(file, line); tempUser.role = line.substr(line.find(":") + 2);
+
+                getline(file, line);
+                string strPoin = line.substr(line.find(":") + 2);
+                stringstream ss(strPoin);
+                ss >> tempUser.poin;
+
+                getline(file, line); tempUser.alamat = line.substr(line.find(":") + 2);
+                getline(file, line); tempUser.noTelepon = line.substr(line.find(":") + 2);
+
+                user[count++] = tempUser;
+
+                if (count >= MAX_USERS)
+                    break;
+
+                getline(file, line);
             }
         }
-        if (!adaSelesai) cout << "   Tidak ada pesanan yang sudah selesai.\n";
-        
-        cout << "\n?? Pesanan yang Masih Diproses:\n";
-        bool adaProses = false;
-        for (int i = 0; i < jumlahJadwal; i++) {
-            if (daftarJadwal[i].tanggalEstimasiSelesai > today && !daftarJadwal[i].sudahDiambil) {
-                cout << "   ? " << daftarJadwal[i].kodeTransaksi << " (Estimasi: " << daftarJadwal[i].tanggalEstimasiSelesai << ")" << endl;
-                adaProses = true;
-            }
+
+        file.close();
+        jumlahPengguna = count;
+        return count;
+    }
+
+    void Customer::saveUsers() {
+        ofstream file("users.txt", ios::trunc);
+        int i;
+        for(i = 0; i < jumlahPengguna; ++i) {
+            file << "=========================" << endl;
+            file << "Nama       : " << user[i].nama << endl;
+            file << "Username   : " << user[i].username << endl;
+            file << "Password   : " << user[i].password << endl;
+            file << "Role       : " << user[i].role << endl;
+            file << "Poin       : " << user[i].poin << endl;
+            file << "Alamat     : " << user[i].alamat << endl;
+            file << "No.Telepon : " << user[i].noTelepon << endl;
+            file << "=========================" << endl << endl;
         }
-        if (!adaProses) cout << "   Tidak ada pesanan yang sedang diproses.\n";
-    }
-};
-
-
-class ManajemenPengeluaran {
-    private:
-        Pengeluaran data[MAX_PENGELUARAN];
-        int jumlahData;
-
-    public:
-
-        ManajemenPengeluaran()
-        {
-            jumlahData = 0;
-        }
-
-        // ===== MENU =====
-        void menuPengeluaran();
-
-        // ===== FILE =====
-        void loadPengeluaran();
-        void savePengeluaran();
-
-        // ===== CRUD =====
-        void tambahPengeluaran();
-        void lihatPengeluaran();
-        void editPengeluaran();
-        void hapusPengeluaran();
-        void cariPengeluaran();
-
-        // ===== LAPORAN =====
-        void laporanHarian();
-        void laporanMingguan();
-        void laporanBulanan();
-
-        double totalPengeluaranHariIni();
-
-        double totalPengeluaran();
-};
-
-class Customer {
-public:
-    int indeksAktif;
-    User user[MAX_USERS];
-    Riwayat riwayat[MAX_RIWAYAT];
-    int jumlahPengguna;
-    Layanan layanan[MAX_LAYANAN];
-    int jumlahLayanan;
-	int jumlahData;
-	
-    Customer() {
-        jumlahPengguna = 0;
-        indeksAktif = -1;
-        jumlahData = 0;
-        dataLayanan(layanan, jumlahLayanan);
+        file.close();
     }
 
-	/*int binarySearchLayanan(const string& namaLayananDicari);
-	void tampilkanHasilBinaryLayanan(const string& namaLayananDicari);
-	void sortLayananByNama();*/
-	
-	// Tambahkan di bagian public class Customer (sekitar line 170)
+    void Admin::loadStatistikLayanan() {
+        ifstream file("layanan_terlaris.txt");
 
-    // Fitur baru
-    ManajemenJadwal manajemenJadwal;
-    
-	
-	void checkStatusCucian();
-	
-	void cariLayananByNama(const string &keyword);
-	
-    int loadUsers();
-    
-	void saveUsers();
-    
-	int login(string& role);
-    
-	int registrasiPengguna();
-    
-	void pengaturanAkun(User userArr[], int &indeks, int jumlahPengguna);
-    
-	void tampilkanAkunMenu();
-    
-	void ulasanRating();
-    
-	void lihatPoin();
-    
-	void tampilkanInformasiAkun();
+        jumlahStatistik = 0;
 
-    PesananItem keranjangLayanan[MAX_KERANJANG];
-    
-	int jumlahKeranjang;
-    
-	double potonganPoin;
-    
-	double totalBiaya;
-    
-	double totalSetelahPromo;
-    
-	double TOTAL;
-
-    void kosongkanKeranjang();
-    void tambahKeKeranjang(const PesananItem& item);
-    void tampilkanKeranjang();
-    void hapusItemKeranjang();
-    void tampilkanRingkasanItem(const PesananItem& item);
-	
-	void loadRiwayatTransaksi();
-	
-    void prosesMenuLayanan();
-    
-    void tampilkanDaftarLayanan();
-    
-    void tampilkanLayananCuciUmum();
-    
-    PesananItem prosesLayananCuciUmum(int pilihan);
-    
-    void tampilkanLayananSatuanPremium();
-    
-	PesananItem prosesLayananSatuanPremium(int pilihan);
-    
-	void tampilkanLayananKhususBarang();
-    
-	PesananItem prosesLayananKhususBarang(int pilihan);
-    
-	void tampilkanLayananDryCleaning();
-    
-	PesananItem prosesLayananDryCleaning(int pilihan);
-    
-	void tampilkanLayananExpress();
-    
-	PesananItem prosesLayananExpress(int pilihan);
-    
-	void tampilkanLayananAntarJemput();
-    
-	PesananItem prosesLayananAntarJemput(int pilihan);
-    
-	void tampilkanLayananPaketLangganan();
-    
-	PesananItem prosesLayananPaketLangganan(int pilihan);
-
-
-    // ===== Layanan Tambahan =====
-    void tampilkanLayananTambahan();
-    
-    void tampilkanParfumLaundry();
-
-    PesananItem prosesParfumLaundry(int pilihan);
-
-    void tampilkanSoftener();
-    
-    PesananItem prosesSoftener(int pilihan);
-
-    
-	Promo daftarPromo[MAX_PROMO];
-    
-	int jumlahPromo;
-    
-	void loadPromo();
-    
-	void checkPromo();
-
-    void tampilkanStruk(const string& metodePembayaran, const string& kodeTransaksi);
-    void simpanRiwayatTransaksi(const string& metodePembayaran, const string& kodeTransaksi);
-
-    void tampilkanMenuCustomer();
-    void prosesMenuCustomer();
-};
-
-class Admin : public Customer {
-public:
-    int jumlahLayanan;
-
-    Admin() {
-        jumlahPengguna = 0;
-        indeksAktif = -1;
-        jumlahData = 0;
-        jumlahLayanan = 0;
-        jumlahStatistik = 0; 
-        jumlahBahan = 0;
-    }
-
-    int jumlahData;
-    Riwayat riwayat[MAX_RIWAYAT];
-    Promo daftarPromo[MAX_PROMO];
-
-    ManajemenPengeluaran pengeluaran;
-	
-    StatistikLayanan statistik[100];
-    int jumlahStatistik;
-
-    BahanLaundry bahan[100];
-    int jumlahBahan;
-
-    void menuStok();
-    void loadStok();
-    void saveStok();
-    void lihatStok();
-    void tambahStok();
-    void editStok();
-    void kurangiStok();
-    void cariStok();
-
-    void loadStatistikLayanan();
-    void saveStatistikLayanan();
-    void updateStatistikLayanan(const string& namaLayanan);
-    void tampilkanLayananTerlaris();
-    void resetStatistikLayanan();
-    void cariLayananTerlaris();
-    void top5Layanan();
-    void menuLayananTerlaris();
-
-    void sortLayananTerlaris();
-
-	void sortRiwayatByTanggalTerbaru();
-	
-	void loadRiwayatTransaksi();
-	
-	void PengaturanAkun();
-	
-	void cariUserLinear(const string& keyword);
-	
-	void sortKodeTransaksi();
-	
-	int binarySearchRiwayat(const string& keyword);
-	
-	void tampilkanHasilBinaryKode(const string& keyword);
-    
-	void tampilkanDashboard();
-    
-	void bacaRiwayatLayanan();
-    
-	void lihatUserAdmin();
-    
-	void lihatUserPengguna();
-    
-	void dataUser();
-    
-	void tampilkanHasilPencarian(bool ditemukan[], const string& jenisPencarian);
-    
-	void cariByTanggal();
-    
-	void cariByNama();
-    
-	void cariByKodeTransaksi();
-    
-	void cariByStatus();
-    
-	void menuCariRiwayat();
-    
-	void updateStatus();
-    
-	void simpanRiwayatKeFile();
-    
-	void hitungPendapatanBulanan();
-    
-	void ulasanRating();
-    
-	void buatPromo();
-    
-	void lihatPromo();
-    
-	void menuPromo();
-    
-	void hapusPromo();
-
-    void dashboardKeuangan();
-
-    void menuAdmin();
-
-    double hitungPendapatanHariIni();
-
-    void gunakanBahan(string namaBahan, int jumlah);
-    
-};
-
-class LaundrySystem {
-public:
-    User user[MAX_USERS];
-    int jumlahPengguna;
-    int indeksAktif;
-    string role;
-    Customer customer;
-    Admin admin;
-
-    LaundrySystem() {
-        jumlahPengguna = 0;
-        indeksAktif = -1;
-        role = "";
-    }
-
-    void tampilkanHeader();
-    void tampilkanMenuUtama();
-    void prosesMenuUtama();
-};
-
-// Insertion Sort untuk mengurutkan riwayat berdasarkan kode transaksi 
-void Admin::sortKodeTransaksi() {
-    for (int i = 1; i < jumlahData; ++i) {
-        Riwayat temp = riwayat[i];
-        int j = i - 1;
-
-        while (j >= 0 && riwayat[j].kode > temp.kode) {
-            riwayat[j + 1] = riwayat[j];
-            --j;
-        }
-
-        riwayat[j + 1] = temp;
-    }
-}
-
-// Binary search untuk mencari riwayat transaksi berdasarkan kode transaksi
-int Admin::binarySearchRiwayat(const string& keyword) {
-	sortKodeTransaksi();
-    int kiri = 0;
-    int kanan = jumlahData - 1;
-    while (kiri <= kanan) {
-        int tengah = (kanan + kiri) / 2;
-        string namaTengah = riwayat[tengah].kode;
-        if (namaTengah == keyword) {
-            return tengah;
-        } else if (namaTengah < keyword) {
-            kiri = tengah + 1;
-        } else {
-            kanan = tengah - 1;
-        }
-    }
-    return -1;
-}
-
-// Tampilkan hasil search
-void Admin::tampilkanHasilBinaryKode(const string& keyword) {
-	int idx = binarySearchRiwayat(keyword);
-    if (idx != -1) {
-        cout << "\n--- RIWAYAT DITEMUKAN ---" << endl;
-        cout << riwayat[idx].detailTransaksi << endl;
-    } else {
-        cout << "Tidak ada riwayat transaksi yang cocok dengan kata kunci " << keyword << endl << endl;
-    }
-	
-}
-
-void Admin::gunakanBahan(string namaBahan, int jumlah)
-{
-    loadStok();
-
-
-    int mlDipakai = jumlah * 10;
-
-    for(int i=0;i<jumlahBahan;i++)
-    {
-        if(bahan[i].namaBahan == namaBahan)
-        {
-            if(bahan[i].stok >= mlDipakai)
-            {
-                bahan[i].stok -= mlDipakai;
-
-                cout<<"\nStok "<<namaBahan<<" berkurang "
-                    <<mlDipakai<<" ml";
-
-                cout<<"\nSisa stok : "
-                    <<bahan[i].stok
-                    <<" ml\n";
-
-                if(bahan[i].stok <= bahan[i].minimalStok)
-                {
-                    cout<<"\n====================================";
-                    cout<<"\n PERINGATAN!";
-                    cout<<"\n Stok "<<namaBahan<<" tinggal "
-                        <<bahan[i].stok<<" ml";
-                    cout<<"\n Segera isi ulang stok.";
-                    cout<<"\n====================================\n";
-                }
-
-                saveStok();
-            }
-            else
-            {
-                cout<<"\nStok "<<namaBahan<<" tidak mencukupi!\n";
-            }
-
+        if (!file.is_open()) {
             return;
         }
-    }
 
-    cout<<"\nNama bahan tidak ditemukan!\n";
-}
+        while (getline(file, statistik[jumlahStatistik].namaLayanan, '|')) {
 
-int Customer::loadUsers() {
-    ifstream file("users.txt");
+            file >> statistik[jumlahStatistik].jumlahDipilih;
+            file.ignore();
 
-    if (!file.is_open()) {
-        cout << "ERROR: users.txt tidak bisa dibuka!" << endl;
-        return 0;
-    }
+            jumlahStatistik++;
 
-    User tempUser;
-    int count = 0;
-    string line;
-
-    while (getline(file, line)) {
-        if (line.find("Nama") != string::npos) {
-            tempUser.nama = line.substr(line.find(":") + 2);
-            getline(file, line); tempUser.username = line.substr(line.find(":") + 2);
-            getline(file, line); tempUser.password = line.substr(line.find(":") + 2);
-            getline(file, line); tempUser.role = line.substr(line.find(":") + 2);
-
-            getline(file, line);
-            string strPoin = line.substr(line.find(":") + 2);
-            stringstream ss(strPoin);
-            ss >> tempUser.poin;
-
-            getline(file, line); tempUser.alamat = line.substr(line.find(":") + 2);
-            getline(file, line); tempUser.noTelepon = line.substr(line.find(":") + 2);
-
-            user[count++] = tempUser;
-
-            if (count >= MAX_USERS)
+            if (jumlahStatistik >= 100)
                 break;
-
-            getline(file, line);
         }
+
+        file.close();
     }
 
-    file.close();
-    jumlahPengguna = count;
-    return count;
-}
+    void Admin::saveStatistikLayanan() {
 
-void Customer::saveUsers() {
-    ofstream file("users.txt", ios::trunc);
-    int i;
-    for(i = 0; i < jumlahPengguna; ++i) {
-        file << "=========================" << endl;
-        file << "Nama       : " << user[i].nama << endl;
-        file << "Username   : " << user[i].username << endl;
-        file << "Password   : " << user[i].password << endl;
-        file << "Role       : " << user[i].role << endl;
-        file << "Poin       : " << user[i].poin << endl;
-        file << "Alamat     : " << user[i].alamat << endl;
-        file << "No.Telepon : " << user[i].noTelepon << endl;
-        file << "=========================" << endl << endl;
-    }
-    file.close();
-}
+        ofstream file("layanan_terlaris.txt");
 
-void Admin::loadStatistikLayanan() {
-    ifstream file("layanan_terlaris.txt");
+        if (!file.is_open()) {
+            cout << "Gagal menyimpan statistik layanan!\n";
+            return;
+        }
 
-    jumlahStatistik = 0;
+        for (int i = 0; i < jumlahStatistik; i++) {
 
-    if (!file.is_open()) {
-        return;
+            file << statistik[i].namaLayanan
+                << "|"
+                << statistik[i].jumlahDipilih
+                << endl;
+
+        }
+
+        file.close();
     }
 
-    while (getline(file, statistik[jumlahStatistik].namaLayanan, '|')) {
+    void Admin::updateStatistikLayanan(const string& namaLayanan) {
 
-        file >> statistik[jumlahStatistik].jumlahDipilih;
-        file.ignore();
+        loadStatistikLayanan();
+
+        for (int i = 0; i < jumlahStatistik; i++) {
+
+            if (statistik[i].namaLayanan == namaLayanan) {
+
+                statistik[i].jumlahDipilih++;
+
+                saveStatistikLayanan();
+
+                return;
+            }
+
+        }
+
+        statistik[jumlahStatistik].namaLayanan = namaLayanan;
+        statistik[jumlahStatistik].jumlahDipilih = 1;
 
         jumlahStatistik++;
 
-        if (jumlahStatistik >= 100)
-            break;
+        saveStatistikLayanan();
     }
 
-    file.close();
-}
-
-void Admin::saveStatistikLayanan() {
-
-    ofstream file("layanan_terlaris.txt");
-
-    if (!file.is_open()) {
-        cout << "Gagal menyimpan statistik layanan!\n";
-        return;
-    }
-
-    for (int i = 0; i < jumlahStatistik; i++) {
-
-        file << statistik[i].namaLayanan
-             << "|"
-             << statistik[i].jumlahDipilih
-             << endl;
-
-    }
-
-    file.close();
-}
-
-void Admin::updateStatistikLayanan(const string& namaLayanan) {
-
-    loadStatistikLayanan();
-
-    for (int i = 0; i < jumlahStatistik; i++) {
-
-        if (statistik[i].namaLayanan == namaLayanan) {
-
-            statistik[i].jumlahDipilih++;
-
-            saveStatistikLayanan();
-
-            return;
-        }
-
-    }
-
-    statistik[jumlahStatistik].namaLayanan = namaLayanan;
-    statistik[jumlahStatistik].jumlahDipilih = 1;
-
-    jumlahStatistik++;
-
-    saveStatistikLayanan();
-}
-
-void Admin::sortLayananTerlaris()
-{
-    for(int i = 1; i < jumlahStatistik; i++)
+    void Admin::sortLayananTerlaris()
     {
-        StatistikLayanan temp = statistik[i];
-
-        int j = i - 1;
-
-        while(j >= 0 &&
-              statistik[j].jumlahDipilih < temp.jumlahDipilih)
+        for(int i = 1; i < jumlahStatistik; i++)
         {
-            statistik[j + 1] = statistik[j];
-            j--;
-        }
+            StatistikLayanan temp = statistik[i];
 
-        statistik[j + 1] = temp;
-    }
-}
+            int j = i - 1;
 
-int Customer::login(string& role) {
+            while(j >= 0 &&
+                statistik[j].jumlahDipilih < temp.jumlahDipilih)
+            {
+                statistik[j + 1] = statistik[j];
+                j--;
+            }
 
-    string username, password;
-
-    tampilkanHeader("                          LOGIN");
-
-    cout << "\n";
-
-    cout << "Username : ";
-    cin >> username;
-
-    cout << "Password : ";
-    cin >> password;
-
-    garis();
-
-    for (int i = 0; i < jumlahPengguna; ++i) {
-
-        if (user[i].username == username &&
-            user[i].password == password) {
-
-            role = user[i].role;
-            return i;
+            statistik[j + 1] = temp;
         }
     }
 
-    cout << "\nLogin gagal. Username atau password salah.\n";
+    int Customer::login(string& role) {
 
-    pauseScreen();
-    clearScreen();
+        string username, password;
 
-    return -1;
-}
+        tampilkanHeader("                          LOGIN");
 
-int Customer::registrasiPengguna() {
-	clearScreen();
+        cout << "\n";
 
-    tampilkanHeader("           REGISTRASI CUSTOMER");
-    if(jumlahPengguna >= MAX_USERS) {
-        cout << "\nMaksimum pengguna telah tercapai.\n\n";
+        cout << "Username : ";
+        cin >> username;
+
+        cout << "Password : ";
+        cin >> password;
+
+        garis();
+
+        for (int i = 0; i < jumlahPengguna; ++i) {
+
+            if (user[i].username == username &&
+                user[i].password == password) {
+
+                role = user[i].role;
+                return i;
+            }
+        }
+
+        cout << "\nLogin gagal. Username atau password salah.\n";
+
         pauseScreen();
-    	clearScreen();
-        return jumlahPengguna;
+        clearScreen();
+
+        return -1;
     }
-    User penggunaBaru;
-    cout << "" << string(40, '-') << endl;
-    cout << left << setw(13) << "" << "REGISTRASI";
-    cout << "\n" << string(40, '-') << endl;
-    penggunaBaru.role = "customer";
-    
-    cout << "Nama          : ";
-    cin.ignore();
-    getline(cin, penggunaBaru.nama);
-    int i;
-    for(i = 0; i < jumlahPengguna; ++i) {
-        if(user[i].nama == penggunaBaru.nama) {
-            cout << "\nNama sudah terdaftar!.\n\n";
-            pauseScreen();
-    		clearScreen();
-            return jumlahPengguna;
-        }
-    }
-    
-    cout << "Username      : ";
-    cin >> penggunaBaru.username;
-    for(i = 0; i < jumlahPengguna; ++i) {
-        if(user[i].username == penggunaBaru.username) {
-            cout << "\nUsername sudah terdaftar!.\n\n";
-            pauseScreen();
-    		clearScreen();
-            return jumlahPengguna;
-        }
-    }
-    
-    cout << "Password      : ";
-    cin >> penggunaBaru.password;
-    cout << "Alamat        : ";
-    cin.ignore();
-    getline(cin, penggunaBaru.alamat);
-    cout << "Nomor Telepon : ";
-    cin >> penggunaBaru.noTelepon;
-    penggunaBaru.poin = 0;
-    
-    
-    user[jumlahPengguna] = penggunaBaru;
-    jumlahPengguna++;
-    saveUsers();
-    cout << "\nRegistrasi berhasil!\n\n";
-    pauseScreen();
-    clearScreen();
-    return jumlahPengguna;
-}
 
-void Customer::tampilkanAkunMenu() {
-    tampilkanHeader("AKUN CUSTOMER");
+    int Customer::registrasiPengguna() {
+        clearScreen();
 
-    cout << "\n";
-    cout << " [1] Pengaturan Akun\n";
-    cout << " [2] Berikan Ulasan\n";
-
-    garis();
-
-    cout << " [0] Kembali\n\n";
-
-    tampilkanFooter();
-    cout << "Pilih : ";
-}
-
-void Customer::pengaturanAkun(User userArr[], int &indeks, int jumlahPengguna) {
-    int pilihan;
-    string passwordVerifikasi;
-    User &current = userArr[indeks];
-    bool selesai = false;
-    while(!selesai) {
-        cout << "" << string(40, '-') << endl;
-        cout << left << setw(10) << "" << "PENGATURAN AKUN";
-        cout << "\n" << string(40, '-') << endl;
-
-        cout << "1. Ubah Nama" << endl;
-        cout << "2. Ubah Username" << endl;
-        cout << "3. Ubah Password" << endl;
-        cout << "4. Ubah Alamat" << endl;
-        cout << "5. Ubah No. Telepon" << endl;
-        cout << "6. Lihat Informasi Akun" << endl;
-        cout << "0. Kembali" << endl;
-
-        cout << endl;
-        cout << "Pilih: ";
-        cin >> pilihan;
-        if (pilihan < 0 || pilihan > 6) {
-            cout << "\nInput tidak valid!" << endl;
+        tampilkanHeader("           REGISTRASI CUSTOMER");
+        if(jumlahPengguna >= MAX_USERS) {
+            cout << "\nMaksimum pengguna telah tercapai.\n\n";
             pauseScreen();
             clearScreen();
-            continue;
+            return jumlahPengguna;
         }
-        if (pilihan != 0) {
-            cout << "\nMasukkan password saat ini untuk verifikasi: ";
-            cin >> passwordVerifikasi;
-            if(passwordVerifikasi != current.password) {
-                cout << "Password salah. Tidak dapat mengubah data akun.\n\n";
+        User penggunaBaru;
+        cout << "" << string(40, '-') << endl;
+        cout << left << setw(13) << "" << "REGISTRASI";
+        cout << "\n" << string(40, '-') << endl;
+        penggunaBaru.role = "customer";
+        
+        cout << "Nama          : ";
+        cin.ignore();
+        getline(cin, penggunaBaru.nama);
+        int i;
+        for(i = 0; i < jumlahPengguna; ++i) {
+            if(user[i].nama == penggunaBaru.nama) {
+                cout << "\nNama sudah terdaftar!.\n\n";
+                pauseScreen();
+                clearScreen();
+                return jumlahPengguna;
+            }
+        }
+        
+        cout << "Username      : ";
+        cin >> penggunaBaru.username;
+        for(i = 0; i < jumlahPengguna; ++i) {
+            if(user[i].username == penggunaBaru.username) {
+                cout << "\nUsername sudah terdaftar!.\n\n";
+                pauseScreen();
+                clearScreen();
+                return jumlahPengguna;
+            }
+        }
+        
+        cout << "Password      : ";
+        cin >> penggunaBaru.password;
+        cout << "Alamat        : ";
+        cin.ignore();
+        getline(cin, penggunaBaru.alamat);
+        cout << "Nomor Telepon : ";
+        cin >> penggunaBaru.noTelepon;
+        penggunaBaru.poin = 0;
+        
+        
+        user[jumlahPengguna] = penggunaBaru;
+        jumlahPengguna++;
+        saveUsers();
+        cout << "\nRegistrasi berhasil!\n\n";
+        pauseScreen();
+        clearScreen();
+        return jumlahPengguna;
+    }
+
+    void Customer::tampilkanAkunMenu() {
+        tampilkanHeader("AKUN CUSTOMER");
+
+        cout << "\n";
+        cout << " [1] Pengaturan Akun\n";
+        cout << " [2] Berikan Ulasan\n";
+
+        garis();
+
+        cout << " [0] Kembali\n\n";
+
+        tampilkanFooter();
+        cout << "Pilih : ";
+    }
+
+    void Customer::pengaturanAkun(User userArr[], int &indeks, int jumlahPengguna) {
+        int pilihan;
+        string passwordVerifikasi;
+        User &current = userArr[indeks];
+        bool selesai = false;
+        while(!selesai) {
+            cout << "" << string(40, '-') << endl;
+            cout << left << setw(10) << "" << "PENGATURAN AKUN";
+            cout << "\n" << string(40, '-') << endl;
+
+            cout << "1. Ubah Nama" << endl;
+            cout << "2. Ubah Username" << endl;
+            cout << "3. Ubah Password" << endl;
+            cout << "4. Ubah Alamat" << endl;
+            cout << "5. Ubah No. Telepon" << endl;
+            cout << "6. Lihat Informasi Akun" << endl;
+            cout << "0. Kembali" << endl;
+
+            cout << endl;
+            cout << "Pilih: ";
+            cin >> pilihan;
+            if (pilihan < 0 || pilihan > 6) {
+                cout << "\nInput tidak valid!" << endl;
                 pauseScreen();
                 clearScreen();
                 continue;
             }
-        }
-        switch (pilihan) {
-        case 1: {
-            string namaBaru;
-            cout << "Nama baru: ";
-            cin.ignore();
-            getline(cin, namaBaru);
-            bool namaSudahAda = false;
-            for(int i = 0; i < jumlahPengguna; ++i) {
-                if(userArr[i].nama == namaBaru && i != indeks) {
-                    namaSudahAda = true;
-                    break;
-                }
-            }
-            if(namaSudahAda) {
-                cout << "Nama sudah digunakan oleh pengguna lain. Silakan gunakan nama lain.\n\n";
-            } else {
-                current.nama = namaBaru;
-                cout << "Nama berhasil diperbarui.\n\n";
-            }
-            pauseScreen();
-            clearScreen();
-            break;
-        }
-        case 2: {
-            string usernameBaru;
-            cout << "Username baru: ";
-            cin >> usernameBaru;
-            bool usernameSudahAda = false;
-            for(int i = 0; i < jumlahPengguna; ++i) {
-                if(userArr[i].username == usernameBaru && i != indeks) {
-                    usernameSudahAda = true;
-                    break;
-                }
-            }
-            if(usernameSudahAda) {
-                cout << "Username sudah digunakan oleh pengguna lain. Silakan pilih yang lain.\n\n";
-            } else {
-                current.username = usernameBaru;
-                cout << "Username berhasil diperbarui.\n\n";
-            }
-            pauseScreen();
-            clearScreen();
-            break;
-        }
-        case 3:
-            cout << "Password baru: ";
-            cin >> current.password;
-            cout << "Password berhasil diperbarui.\n\n";
-            pauseScreen();
-            clearScreen();
-            break;
-        case 4:
-            cout << "Alamat baru: ";
-            cin.ignore();
-            getline(cin, current.alamat);
-            cout << "Alamat berhasil diperbarui.\n\n";
-            pauseScreen();
-            clearScreen();
-            break;
-        case 5:
-            cout << "No. Telepon baru: ";
-            cin >> current.noTelepon;
-            cout << "No. Telepon berhasil diperbarui.\n\n";
-            pauseScreen();
-            clearScreen();
-            break;
-        case 6:
-            cout << endl;
-            cout << "Nama        : " << current.nama << endl;
-            cout << "Username    : " << current.username << endl;
-            cout << "Password    : " << current.password << endl;
-            cout << "Alamat      : " << current.alamat << endl;
-            cout << "No. Telepon : " << current.noTelepon << endl;
-            cout << endl;
-            pauseScreen();
-            clearScreen();
-            break;
-        case 0:
-            selesai = true;
-            break;
-        }
-    }
-}
-		
-void Customer::tampilkanInformasiAkun() {
-    User &current = user[indeksAktif];
-    cout << endl;
-	cout << "Nama        : " << current.nama << endl;
-    cout << "Username    : " << current.username << endl;
-    cout << "Password    : " << current.password << endl;
-    cout << "Alamat      : " << current.alamat << endl;
-    cout << "No. Telepon : " << current.noTelepon << endl;
-}
-
-void Customer::ulasanRating() {
-    string komentar;
-    int rating;
-    while (true) {
-        cout << "Berikan Rating (1 - 5): ";
-        cin >> rating;
-        if (rating < 1 || rating > 5) {
-            cout << "Rating harus antara 1 sampai 5." << endl << endl;
-        } else {
-            break;
-        }
-    }
-    cout << "Berikan Ulasan: ";
-    cin.ignore();
-    getline(cin, komentar);
-    cout << "Ulasan ditambahkan." << endl;
-    pauseScreen();
-    ofstream file("ulasanRating.txt", ios::app);
-    if (!file.is_open()) {
-        cout << "Gagal membuka file untuk menyimpan komentar dan rating!" << endl;
-        pauseScreen();
-        return;
-    }
-    file << user[indeksAktif].username << " " << rating << " " << komentar << endl;
-    file.close();
-}
-
-void Customer::lihatPoin() {
-    cout << "Poin Anda saat ini: " << user[indeksAktif].poin << endl;
-}
-
-void Customer::kosongkanKeranjang() {
-    jumlahKeranjang = 0;
-}
-
-void Customer::tambahKeKeranjang(const PesananItem& item) {
-    if (item.namaLayanan != "" && jumlahKeranjang < MAX_KERANJANG) {
-        keranjangLayanan[jumlahKeranjang++] = item;
-        tampilkanRingkasanItem(item);
-        cout << "\nItem berhasil ditambahkan ke keranjang!" << endl;
-        cout << endl;
-    }
-}
-
-void Customer::tampilkanKeranjang() {
-    if (jumlahKeranjang == 0) {
-        cout << "\nKeranjang kosong!" << endl;
-        return;
-    }
-    cout << "\n" << string(50, '=') << endl;
-    cout << "                KERANJANG BELANJA" << endl;
-    cout << string(50, '=') << endl;
-    totalBiaya = 0.0;
-    int i;
-    for (i = 0; i < jumlahKeranjang; ++i) {
-        const PesananItem& item = keranjangLayanan[i];
-        cout << "\nItem ke-" << (i + 1) << ":" << endl;
-        cout << string(30, '-') << endl;
-        cout << "Kategori   \t: " << item.kategoriLayanan << endl;
-        cout << "Layanan    \t: " << item.namaLayanan << endl;
-        cout << "Item       \t: " << item.namaItem << endl;
-        cout << "Jumlah     \t: " << fixed << setprecision(1) << item.beratAtauJumlah << " " << item.unitSatuan << endl;
-        cout << "Harga per " << item.unitSatuan << "\t: Rp " << fixed << setprecision(0) << item.hargaPerUnit << endl;
-        cout << "Subtotal   \t: Rp " << item.subTotalHarga << endl;
-        cout << "Estimasi   \t: " << item.estimasiSelesai << endl;
-        totalBiaya += item.subTotalHarga;
-    }
-    cout << "\n" << string(50, '=') << endl;
-    cout << "TOTAL KESELURUHAN: Rp " << fixed << setprecision(0) << totalBiaya << endl;
-    cout << string(50, '=') << endl;
-}
-
-void Customer::hapusItemKeranjang() {
-    if (jumlahKeranjang == 0) {
-        cout << "\nKeranjang kosong!" << endl;
-        return;
-    }
-    tampilkanKeranjang();
-    int pilihan = inputValidasi<int>("Pilih nomor item yang ingin dihapus: ");
-    if (pilihan >= 1 && pilihan <= jumlahKeranjang) {
-        int i;
-        for (i = pilihan - 1; i < jumlahKeranjang - 1; ++i) {
-            keranjangLayanan[i] = keranjangLayanan[i + 1];
-        }
-        jumlahKeranjang--;
-        cout << "\nItem berhasil dihapus!" << endl;
-    } else {
-        cout << "\nNomor item tidak valid!" << endl;
-    }
-}
-
-void Customer::tampilkanRingkasanItem(const PesananItem& item) {
-    cout << "\n" << string(35, '-') << endl;
-    cout << "     RINGKASAN ITEM SAAT INI" << endl;
-    cout << string(35, '-') << endl;
-    cout << "Kategori   : " << item.kategoriLayanan << endl;
-    cout << "Layanan    : " << item.namaLayanan << endl;
-    cout << "Item       : " << item.namaItem << endl;
-    cout << "Jumlah     : " << fixed << setprecision(1) << item.beratAtauJumlah << " " << item.unitSatuan << endl;
-    cout << "Harga per " << item.unitSatuan << " : Rp " << fixed << setprecision(0) << item.hargaPerUnit << endl;
-    cout << "Subtotal   : Rp " << item.subTotalHarga << endl;
-    cout << "Estimasi   : " << item.estimasiSelesai << endl;
-    cout << string(35, '-') << endl;
-}
-
-void Customer::tampilkanMenuCustomer() {
-    tampilkanHeader("MENU CUSTOMER");
-
-    cout << "\n";
-    cout << " [1] Akun\n";
-    cout << " [2] Lihat Poin\n";
-    cout << " [3] Layanan Laundry\n";
-    cout << " [4] Check Status Cucian\n";
-    cout << " [5] Notifikasi\n";
-    cout << " [6] Jadwal Pengambilan\n";
-
-    garis();
-
-    cout << " [0] Logout\n\n";
-
-    tampilkanFooter();
-    cout << "Pilih Menu : ";
-}
-
-void Customer::prosesMenuCustomer() {
-    int subPilihan;
-    while(true) {
-        tampilkanMenuCustomer();
-        cin >> subPilihan;
-        if(subPilihan == 1) {
-            clearScreen();
-            int pill;
-            while (true) {
-                tampilkanAkunMenu();
-                cin >> pill;
-                clearScreen();
-                if(pill == 1) {
-                    pengaturanAkun(user, indeksAktif, jumlahPengguna);
-                    saveUsers();
-                    clearScreen();
-                } else if(pill == 2) {
-                    ulasanRating();
-                    clearScreen();
-                } else if(pill == 0) {
-                    break;
-                } else {
-                    cout << "\nPilihan tidak valid.\n\n";
+            if (pilihan != 0) {
+                cout << "\nMasukkan password saat ini untuk verifikasi: ";
+                cin >> passwordVerifikasi;
+                if(passwordVerifikasi != current.password) {
+                    cout << "Password salah. Tidak dapat mengubah data akun.\n\n";
                     pauseScreen();
                     clearScreen();
+                    continue;
                 }
             }
-        } else if(subPilihan == 2) {
-            lihatPoin();
-            cout << endl;
-            pauseScreen();
-            clearScreen();
-        } else if(subPilihan == 3) {
-            clearScreen();
-            prosesMenuLayanan();
-        } else if(subPilihan == 4) {
-            clearScreen();
-            checkStatusCucian();
-            manajemenJadwal.periksaKeterlambatan();  // ? BARU: CEK KETERLAMBATAN
-        } else if(subPilihan == 5) {  // ? BARU: MENU NOTIFIKASI
-            clearScreen();
-            manajemenJadwal.lihatNotifikasi();
-            pauseScreen();
-            clearScreen();
-        } else if(subPilihan == 6) {  // ? BARU: MENU JADWAL PENGAMBILAN
-            clearScreen();
-            manajemenJadwal.tampilanKalenderJadwal();
-            string kode;
-            cout << "\nMasukkan kode transaksi untuk konfirmasi pengambilan (atau 0 untuk kembali): ";
-            cin >> kode;
-            if (kode != "0") {
-                manajemenJadwal.konfirmasiPengambilan(kode);
-            }
-            pauseScreen();
-            clearScreen();
-        } else if(subPilihan == 0) {
-            cout << "\nLogout berhasil.\n\n";
-            pauseScreen();
-            clearScreen();
-            indeksAktif = -1;
-            break;
-        } else {
-            cout << "\nPilihan tidak valid.\n\n";
-            pauseScreen();
-            clearScreen();
-        }
-    }
-}
-
-void Customer::checkStatusCucian() {
-    loadRiwayatTransaksi();  
-
-    string nama = user[indeksAktif].nama;
-    bool ditemukan = false;
-
-    for (int i = 0; i < jumlahData; ++i) {
-        if (riwayat[i].nama == nama && riwayat[i].status != "Selesai") {
-            cout << "\n--- STATUS CUCIAN ---\n";
-            cout << riwayat[i].detailTransaksi << endl;
-            ditemukan = true;
-        }
-    }
-
-    if (!ditemukan) {
-        cout << "Saat ini Anda tidak memiliki cucian yang sedang dalam proses.\n";
-    }
-
-    cout << endl;
-    pauseScreen();
-    clearScreen();
-}
-
-
-void Customer::tampilkanDaftarLayanan() {
-    tampilkanHeader("DAFTAR LAYANAN");
-
-    cout << "\n";
-
-    cout << " [1] Cuci Umum\n";
-    cout << " [2] Satuan Premium\n";
-    cout << " [3] Khusus Barang\n";
-    cout << " [4] Dry Cleaning\n";
-    cout << " [5] Express\n";
-    cout << " [6] Antar Jemput\n";
-    cout << " [7] Paket Langganan\n";
-    cout << " [8] Layanan Tambahan\n";
-
-    garis();
-
-    cout << " [9]  Keranjang\n";
-    cout << " [10] Hapus Keranjang\n";
-    cout << " [11] Checkout\n";
-    cout << " [12] Cari Layanan\n";
-
-    garis();
-
-    cout << " [0] Kembali\n";
-
-    tampilkanFooter();
-}
-
-string toLowerCase(string teks) {
-    for (int i = 0; i < teks.length(); i++) {
-        if (teks[i] >= 'A' && teks[i] <= 'Z') {
-            teks[i] = teks[i] + 32;
-        }
-    }
-    return teks;
-}
-
-string toUpperCase(string teks) {
-    for (int i = 0; i < teks.length(); i++) {
-        if (teks[i] >= 'a' && teks[i] <= 'z') {
-            teks[i] = teks[i] - 32;
-        }
-    }
-    return teks;
-}
-
-// Linear Search untuk Mencari Nama Layanan
-void Customer::cariLayananByNama(const string& keyword) {
-    bool ditemukan = false;
-
-    string keywordLower = toLowerCase(keyword);
-
-    for (int i = 0; i < jumlahLayanan; i++) {
-
-        string namaLower = toLowerCase(layanan[i].namaLayanan);
-
-        if (namaLower.find(keywordLower) != string::npos) {
-            ditemukan = true;
-
-            cout << "\n--- LAYANAN DITEMUKAN ---" << endl;
-            cout << "Nama Layanan : " << layanan[i].namaLayanan << endl;
-            cout << "Kategori     : " << layanan[i].kategori << endl;
-            cout << "Harga        : Rp " << layanan[i].harga << endl;
-            cout << "Satuan       : " << layanan[i].satuan << endl;
-        }
-    }
-
-    if (!ditemukan) {
-        cout << "Layanan dengan kata kunci \"" << keyword
-             << "\" tidak ditemukan!" << endl;
-    }
-}
-
-string buatKodeTransaksi()
-{
-    ifstream file("riwayat_transaksi.txt");
-
-    time_t sekarang = time(0);
-    tm *waktu = localtime(&sekarang);
-
-    stringstream tanggalHariIni;
-    tanggalHariIni << setw(2) << setfill('0') << (waktu->tm_year + 1900) % 100
-                   << setw(2) << setfill('0') << waktu->tm_mon + 1
-                   << setw(2) << setfill('0') << waktu->tm_mday;
-
-    string kodeTanggal = tanggalHariIni.str();
-
-    int jumlahHariIni = 0;
-    string baris;
-
-    while (getline(file, baris))
-    {
-        size_t pos = baris.find("Kode Transaksi : ");
-
-        if (pos != string::npos)
-        {
-            string kode = baris.substr(pos + 17);
-
-            if (kode.length() >= 11)
-            {
-                if (kode.substr(5,6) == kodeTanggal)
-                {
-                    jumlahHariIni++;
-                }
-            }
-        }
-    }
-
-    file.close();
-
-    stringstream hasil;
-
-    hasil << "AMBA/"
-          << kodeTanggal
-          << "/"
-          << setw(3)
-          << setfill('0')
-          << jumlahHariIni + 1;
-
-    return hasil.str();
-}
-
-
-void Customer::prosesMenuLayanan() {
-    int pilihan;
-    do {
-        tampilkanDaftarLayanan();
-        pilihan = validasiInput(0, 12, "Pilih layanan (0-12): ");
-        switch (pilihan) {
-            case CUCI_UMUM: {
-                int subPilihan;
-                tampilkanLayananCuciUmum();
-                subPilihan = inputValidasi<int>("Pilih sub-layanan (0 untuk kembali): ");
-                if (subPilihan != 0) {
-                    PesananItem item = prosesLayananCuciUmum(subPilihan);
-                    tambahKeKeranjang(item);
-                }
-                break;
-            }
-            case SATUAN_PREMIUM: {
-                int subPilihan;
-                tampilkanLayananSatuanPremium();
-                subPilihan = inputValidasi<int>("Pilih sub-layanan (0 untuk kembali): ");
-                if (subPilihan != 0) {
-                    PesananItem item = prosesLayananSatuanPremium(subPilihan);
-                    tambahKeKeranjang(item);
-                }
-                break;
-            }
-            case KHUSUS_BARANG: {
-                int subPilihan;
-                tampilkanLayananKhususBarang();
-                subPilihan = inputValidasi<int>("Pilih sub-layanan (0 untuk kembali): ");
-                if (subPilihan != 0) {
-                    PesananItem item = prosesLayananKhususBarang(subPilihan);
-                    tambahKeKeranjang(item);
-                }
-                break;
-            }
-            case DRY_CLEANING: {
-                int subPilihan;
-                tampilkanLayananDryCleaning();
-                subPilihan = validasiInput(0, 10, "Pilih sub-layanan (0 untuk kembali): ");
-                if (subPilihan != 0) {
-                    PesananItem item = prosesLayananDryCleaning(subPilihan);
-                    tambahKeKeranjang(item);
-                }
-                break;
-            }
-            case EXPRESS: {
-                int subPilihan;
-                tampilkanLayananExpress();
-                subPilihan = validasiInput(0, 10, "Pilih sub-layanan (0 untuk kembali): ");
-                if (subPilihan != 0) {
-                    PesananItem item = prosesLayananExpress(subPilihan);
-                    tambahKeKeranjang(item);
-                }
-                break;
-            }
-            case ANTAR_JEMPUT: {
-                int subPilihan;
-                tampilkanLayananAntarJemput();
-                subPilihan = validasiInput(0, 10, "Pilih sub-layanan (0 untuk kembali): ");
-                if (subPilihan != 0) {
-                    PesananItem item = prosesLayananAntarJemput(subPilihan);
-                    tambahKeKeranjang(item);
-                }
-                break;
-            }
-            case PAKET_LANGGANAN: {
-                int subPilihan;
-                tampilkanLayananPaketLangganan();
-                subPilihan = validasiInput(0, 10, "Pilih sub-layanan (0 untuk kembali): ");
-                if (subPilihan != 0) {
-                    PesananItem item = prosesLayananPaketLangganan(subPilihan);
-                    tambahKeKeranjang(item);
-                }
-                break;
-            }
-            case 8:
-                tampilkanLayananTambahan();
-                break;
-
-            case 9:
-                tampilkanKeranjang();
-                break;
-
-            case 10:
-                hapusItemKeranjang();
-                break;
-
-            case 11: {
-                int pilihanMetode;
-                string metode;
-
-                cout << "\nPilih metode pembayaran:\n";
-                cout << "1. Cash\n";
-                cout << "2. Transfer\n";
-                cout << "3. Qris\n";
-                cout << "4. E-Wallet\n";
-
-                pilihanMetode = validasiInput(1, 4, "Pilihan Anda (1-4): ");
-
-                switch (pilihanMetode) {
-                    case 1:
-                        metode = "Cash";
-                        break;
-
-                    case 2:
-                        metode = "Transfer";
-                        break;
-
-                    case 3:
-                        metode = "Qris";
-                        break;
-
-                    case 4: {
-                        int pilihanEwallet;
-
-                        cout << "\nPilih jenis E-Wallet:\n";
-                        cout << "1. GoPay\n";
-                        cout << "2. ShopeePay\n";
-                        cout << "3. OVO\n";
-                        cout << "4. DANA\n";
-
-                        pilihanEwallet = validasiInput(1, 4, "Pilihan Anda (1-4): ");
-
-                        string jenisEwallet;
-
-                        switch (pilihanEwallet) {
-                            case 1:
-                                jenisEwallet = "GoPay";
-                                break;
-
-                            case 2:
-                                jenisEwallet = "ShopeePay";
-                                break;
-
-                            case 3:
-                                jenisEwallet = "OVO";
-                                break;
-
-                            case 4:
-                                jenisEwallet = "DANA";
-                                break;
-
-                            default:
-                                cout << "Pilihan E-Wallet tidak valid.\n";
-                                pauseScreen();
-                                clearScreen();
-                                return;
-                        }
-
-                        metode = "E-Wallet - " + jenisEwallet;
+            switch (pilihan) {
+            case 1: {
+                string namaBaru;
+                cout << "Nama baru: ";
+                cin.ignore();
+                getline(cin, namaBaru);
+                bool namaSudahAda = false;
+                for(int i = 0; i < jumlahPengguna; ++i) {
+                    if(userArr[i].nama == namaBaru && i != indeks) {
+                        namaSudahAda = true;
                         break;
                     }
-
-                    default:
-                        cout << "Pilihan metode pembayaran tidak valid.\n";
-                        pauseScreen();
-                        clearScreen();
-                        return;
                 }
-
-                string kodeTransaksi = buatKodeTransaksi();
-
-                Admin adminStatistik;
-
-                for (int i = 0; i < jumlahKeranjang; i++) {
-
-                    adminStatistik.updateStatistikLayanan(
-                        keranjangLayanan[i].namaLayanan
-                    );
-
+                if(namaSudahAda) {
+                    cout << "Nama sudah digunakan oleh pengguna lain. Silakan gunakan nama lain.\n\n";
+                } else {
+                    current.nama = namaBaru;
+                    cout << "Nama berhasil diperbarui.\n\n";
                 }
-
-                Admin adminStok;
-
-                for(int i = 0; i < jumlahKeranjang; i++)
-                {
-                    if(keranjangLayanan[i].kategoriLayanan == "Parfum" ||
-                    keranjangLayanan[i].kategoriLayanan == "Softener")
-                    {
-                        adminStok.gunakanBahan(
-                            keranjangLayanan[i].namaLayanan,
-                            keranjangLayanan[i].jumlahBahan
-                        );
-                    }
-                }
-
-                tampilkanStruk(metode, kodeTransaksi);
-
-                simpanRiwayatTransaksi(metode, kodeTransaksi);
-
-                kosongkanKeranjang();
-
-                cout << "\nTerima kasih telah menggunakan layanan kami!\n";
                 pauseScreen();
                 clearScreen();
-                return;
-            }
-
-            case 12: {
-                string keyword;
-
-                cout << "Masukkan nama layanan yang ingin dicari: ";
-                cin.ignore();
-                getline(cin, keyword);
-
-                cariLayananByNama(keyword);
-                cout << endl;
                 break;
             }
-            default:
-                cout << "\nPilihan tidak valid. Silakan coba lagi.\n\n";
-        }
-    	pauseScreen();
-        clearScreen();
-    } while (pilihan != 0);
-}
-
-// Fungsi untuk menampilkan sub layanan Cuci Umum
-void Customer::tampilkanLayananCuciUmum() {
-    cout << "\n--- Detail Layanan Cuci Umum ---" << endl;
-    cout << "1. Cuci Kering (Rp 5.000/kg)" << endl;
-    cout << "2. Cuci Basah (Rp 4.000/kg)" << endl;
-    cout << "3. Cuci Setrika (Rp 7.000/kg)" << endl;
-    cout << "4. Setrika Saja (Rp 4.000/kg)" << endl;
-    cout << "0. Kembali" << endl;
-    cout << string(32, '-') << endl;
-}
-
-// Fungsi untuk memproses layanan Cuci Umum
-PesananItem Customer::prosesLayananCuciUmum(int pilihan) {
-    PesananItem item;
-    item.kategoriLayanan = "Cuci Umum";
-    item.unitSatuan = "kg";
-    
-    switch (pilihan) {
-        case 1:
-            item.namaLayanan = "Cuci Kering";
-            item.hargaPerUnit = 5000.0;
-            item.estimasiSelesai = "1-2 hari";
-            break;
-        case 2:
-            item.namaLayanan = "Cuci Basah";
-            item.hargaPerUnit = 4000.0;
-            item.estimasiSelesai = "1 hari";
-            break;
-        case 3:
-            item.namaLayanan = "Cuci Setrika";
-            item.hargaPerUnit = 7000.0;
-            item.estimasiSelesai = "2-3 hari";
-            break;
-        case 4:
-            item.namaLayanan = "Setrika Saja";
-            item.hargaPerUnit = 4000.0;
-            item.estimasiSelesai = "1-2 hari";
-            break;
-        default:
-            item.namaLayanan = "";
-            return item;
-    }
-    
-    cout << "\nLayanan Terpilih: " << item.namaLayanan << endl;
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-    item.namaItem = inputString("Jenis item (Baju/Celana/Campuran): ");
-    item.beratAtauJumlah = inputValidasi<double>("Masukkan berat (kg): ");
-    item.subTotalHarga = item.beratAtauJumlah * item.hargaPerUnit;
-    
-    return item;
-}
-
-// Fungsi untuk menampilkan sub layanan Satuan Premium
-void Customer::tampilkanLayananSatuanPremium() {
-    cout << "\n--- Detail Layanan Satuan (Premium) ---" << endl;
-    cout << "1. Kemeja/Kaos (Rp 7.000/helai)" << endl;
-    cout << "2. Celana/Rok (Rp 7.000/helai)" << endl;
-    cout << "3. Jaket/Sweater (Rp 15.000/helai)" << endl;
-    cout << "4. Jas/Blazer (Rp 35.000/helai)" << endl;
-    cout << "5. Gaun/Kebaya (Rp 35.000/helai)" << endl;
-    cout << "0. Kembali" << endl;
-    cout << string(39, '-') << endl;
-}
-
-// Fungsi untuk memproses layanan Satuan Premium
-PesananItem Customer::prosesLayananSatuanPremium(int pilihan) {
-    PesananItem item;
-    item.kategoriLayanan = "Satuan Premium";
-    item.unitSatuan = "helai";
-    
-    switch (pilihan) {
-        case 1:
-            item.namaLayanan = "Kemeja/Kaos";
-            item.hargaPerUnit = 7000.0;
-            item.estimasiSelesai = "1-2 hari";
-            break;
-        case 2:
-            item.namaLayanan = "Celana/Rok";
-            item.hargaPerUnit = 7000.0;
-            item.estimasiSelesai = "1-2 hari";
-            break;
-        case 3:
-            item.namaLayanan = "Jaket/Sweater";
-            item.hargaPerUnit = 15000.0;
-            item.estimasiSelesai = "2 hari";
-            break;
-        case 4:
-            item.namaLayanan = "Jas/Blazer";
-            item.hargaPerUnit = 35000.0;
-            item.estimasiSelesai = "3-4 hari";
-            break;
-        case 5:
-            item.namaLayanan = "Gaun/Kebaya";
-            item.hargaPerUnit = 35000.0;
-            item.estimasiSelesai = "3-4 hari";
-            break;
-        default:
-            item.namaLayanan = "";
-            return item;
-    }
-    
-    cout << "\nLayanan Terpilih: " << item.namaLayanan << endl;
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-    item.namaItem = inputString("Jenis item spesifik: ");
-    item.beratAtauJumlah = inputValidasi<double>("Masukkan jumlah (helai): ");
-    item.subTotalHarga = item.beratAtauJumlah * item.hargaPerUnit;
-    
-    return item;
-}
-
-// Fungsi untuk menampilkan sub layanan Khusus Barang
-void Customer::tampilkanLayananKhususBarang() {
-    cout << "\n--- Detail Layanan Khusus Barang ---" << endl;
-    cout << "1. Cuci Sepatu Reguler (Rp 40.000/pasang)" << endl;
-    cout << "2. Cuci Sepatu Premium (Rp 65.000/pasang)" << endl;
-    cout << "3. Cuci Tas (Rp 40.000/buah)" << endl;
-    cout << "4. Cuci Helm (Rp 35.000/buah)" << endl;
-    cout << "5. Cuci Gorden (Rp 35.000/meter)" << endl;
-    cout << "6. Cuci Karpet (Rp 30.000/lembar)" << endl;
-    cout << "7. Cuci Sprei/Bedcover (Rp 25.000/set)" << endl;
-    cout << "8. Cuci Selimut/Bantal (Rp 25.000/buah)" << endl;
-    cout << "0. Kembali" << endl;
-    cout << string(40, '-') << endl;
-}
-
-// Fungsi untuk memproses layanan Khusus Barang
-PesananItem Customer::prosesLayananKhususBarang(int pilihan) {
-    PesananItem item;
-    item.kategoriLayanan = "Khusus Barang";
-    
-    switch (pilihan) {
-        case 1:
-            item.namaLayanan = "Cuci Sepatu Reguler";
-            item.hargaPerUnit = 40000.0;
-            item.estimasiSelesai = "2-3 hari";
-            item.unitSatuan = "pasang";
-            break;
-        case 2:
-            item.namaLayanan = "Cuci Sepatu Premium";
-            item.hargaPerUnit = 65000.0;
-            item.estimasiSelesai = "3-4 hari";
-            item.unitSatuan = "pasang";
-            break;
-        case 3:
-            item.namaLayanan = "Cuci Tas";
-            item.hargaPerUnit = 40000.0;
-            item.estimasiSelesai = "3-5 hari";
-            item.unitSatuan = "buah";
-            break;
-        case 4:
-            item.namaLayanan = "Cuci Helm";
-            item.hargaPerUnit = 35000.0;
-            item.estimasiSelesai = "1-2 hari";
-            item.unitSatuan = "buah";
-            break;
-        case 5:
-            item.namaLayanan = "Cuci Gorden";
-            item.hargaPerUnit = 35000.0;
-            item.estimasiSelesai = "3-5 hari";
-            item.unitSatuan = "meter";
-            break;
-        case 6:
-            item.namaLayanan = "Cuci Karpet";
-            item.hargaPerUnit = 30000.0;
-            item.estimasiSelesai = "4-6 hari";
-            item.unitSatuan = "lembar";
-            break;
-        case 7:
-            item.namaLayanan = "Sprei/Bedcover";
-            item.hargaPerUnit = 25000.0;
-            item.estimasiSelesai = "2-3 hari";
-            item.unitSatuan = "set";
-            break;
-        case 8:
-            item.namaLayanan = "Selimut/Bantal";
-            item.hargaPerUnit = 25000.0;
-            item.estimasiSelesai = "2-3 hari";
-            item.unitSatuan = "buah";
-            break;
-        default:
-            item.namaLayanan = "";
-            return item;
-    }
-    
-    cout << "\nLayanan Terpilih: " << item.namaLayanan << endl;
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-    item.namaItem = inputString("Jenis item spesifik: ");
-    item.beratAtauJumlah = inputValidasi<double>("Masukkan jumlah (" + item.unitSatuan + "): ");
-    item.subTotalHarga = item.beratAtauJumlah * item.hargaPerUnit;
-    
-    return item;
-}
-
-// Fungsi untuk menampilkan sub layanan Dry Cleaning
-void Customer::tampilkanLayananDryCleaning() {
-    cout << "\n--- Detail Layanan Dry Cleaning ---" << endl;
-    cout << "1. Jas Formal (Rp 60.000/helai)" << endl;
-    cout << "2. Gaun Malam (Rp 80.000/helai)" << endl;
-    cout << "3. Kebaya (Rp 60.000/helai)" << endl;
-    cout << "4. Pakaian Sutera (Rp 100.000/helai)" << endl;
-    cout << "0. Kembali" << endl;
-    cout << string(36, '-') << endl;
-}
-
-// Fungsi untuk memproses layanan Dry Cleaning
-PesananItem Customer::prosesLayananDryCleaning(int pilihan) {
-    PesananItem item;
-    item.kategoriLayanan = "Dry Cleaning";
-    item.unitSatuan = "helai";
-    
-    switch (pilihan) {
-        case 1:
-            item.namaLayanan = "Jas Formal";
-            item.hargaPerUnit = 60000.0;
-            item.estimasiSelesai = "2-4 hari";
-            break;
-        case 2:
-            item.namaLayanan = "Gaun Malam";
-            item.hargaPerUnit = 80000.0;
-            item.estimasiSelesai = "3-5 hari";
-            break;
-        case 3:
-            item.namaLayanan = "Kebaya";
-            item.hargaPerUnit = 60000.0;
-            item.estimasiSelesai = "3-5 hari";
-            break;
-        case 4:
-            item.namaLayanan = "Pakaian Sutera";
-            item.hargaPerUnit = 100000.0;
-            item.estimasiSelesai = "3-5 hari";
-            break;
-        default:
-            item.namaLayanan = "";
-            return item;
-    }
-    
-    cout << "\nLayanan Terpilih: " << item.namaLayanan << endl;
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-    item.namaItem = inputString("Jenis item spesifik: ");
-    item.beratAtauJumlah = inputValidasi<double>("Masukkan jumlah (helai): ");
-    item.subTotalHarga = item.beratAtauJumlah * item.hargaPerUnit;
-    
-    return item;
-}
-
-// Fungsi untuk menampilkan sub layanan Express
-void Customer::tampilkanLayananExpress() {
-    cout << "\n--- Detail Layanan Express ---" << endl;
-    cout << "1. Same Day Service (Rp 20.000/kg)" << endl;
-    cout << "2. Next Day Service (Rp 10.000/kg)" << endl;
-    cout << "0. Kembali" << endl;
-    cout << string(31, '-') << endl;
-}
-
-// Fungsi untuk memproses layanan Express
-PesananItem Customer::prosesLayananExpress(int pilihan) {
-    PesananItem item;
-    item.kategoriLayanan = "Express";
-    item.unitSatuan = "kg";
-    
-    switch (pilihan) {
-        case 1:
-            item.namaLayanan = "Same Day Service";
-            item.hargaPerUnit = 20000.0;
-            item.estimasiSelesai = "Selesai hari yang sama";
-            break;
-        case 2:
-            item.namaLayanan = "Next Day Service";
-            item.hargaPerUnit = 10000.0;
-            item.estimasiSelesai = "Selesai besok hari";
-            break;
-        default:
-            item.namaLayanan = "";
-            return item;
-    }
-    
-    cout << "\nLayanan Terpilih: " << item.namaLayanan << endl;
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-    item.namaItem = inputString("Jenis item (Baju/Celana/Campuran): ");
-    item.beratAtauJumlah = inputValidasi<double>("Masukkan berat (kg): ");
-    item.subTotalHarga = item.beratAtauJumlah * item.hargaPerUnit;
-    
-    return item;
-}
-
-// Fungsi untuk menampilkan sub layanan Antar Jemput
-void Customer::tampilkanLayananAntarJemput() {
-    cout << "\n--- Detail Layanan Antar Jemput ---" << endl;
-    cout << "1. Radius < 5 KM (Rp 15.000)" << endl;
-    cout << "2. Radius 5-10 KM (Rp 25.000)" << endl;
-    cout << "3. Di atas 10 KM (Rp 35.000)" << endl;
-    cout << "0. Kembali" << endl;
-    cout << string(35, '-') << endl;
-}
-
-// Fungsi untuk memproses layanan Antar Jemput
-PesananItem Customer::prosesLayananAntarJemput(int pilihan) {
-    PesananItem item;
-    item.kategoriLayanan = "Antar Jemput";
-    item.unitSatuan = "layanan";
-    item.beratAtauJumlah = 1;
-    
-    switch (pilihan) {
-        case 1:
-            item.namaLayanan = "Antar Jemput < 5 KM";
-            item.hargaPerUnit = 15000.0;
-            item.estimasiSelesai = "Sesuai jadwal";
-            break;
-        case 2:
-            item.namaLayanan = "Antar Jemput 5-10 KM";
-            item.hargaPerUnit = 25000.0;
-            item.estimasiSelesai = "Sesuai jadwal";
-            break;
-        case 3:
-            item.namaLayanan = "Antar Jemput > 10 KM";
-            item.hargaPerUnit = 35000.0;
-            item.estimasiSelesai = "Sesuai jadwal";
-            break;
-        default:
-            item.namaLayanan = "";
-            return item;
-    }
-    
-    cout << "\nLayanan Terpilih: " << item.namaLayanan << endl;
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-    item.namaItem = inputString("Alamat tujuan: ");
-    item.subTotalHarga = item.hargaPerUnit;
-    
-    return item;
-}
-
-// Fungsi untuk menampilkan sub layanan Paket Langganan
-void Customer::tampilkanLayananPaketLangganan() {
-    cout << "\n--- Detail Paket Langganan ---" << endl;
-    cout << "1. Paket 20kg/bulan (Rp 150.000)" << endl;
-    cout << "2. Paket 40kg/bulan (Rp 280.000)" << endl;
-    cout << "3. Paket > 40kg/bulan (Rp 400.000)" << endl;
-    cout << "0. Kembali" << endl;
-    cout << string(31, '-') << endl;
-}
-
-// Fungsi untuk memproses layanan Paket Langganan
-PesananItem Customer::prosesLayananPaketLangganan(int pilihan) {
-    PesananItem item;
-    item.kategoriLayanan = "Paket Langganan";
-    item.unitSatuan = "paket";
-    item.beratAtauJumlah = 1;
-    
-    switch (pilihan) {
-        case 1:
-            item.namaLayanan = "Paket 20kg/bulan";
-            item.hargaPerUnit = 150000.0;
-            item.estimasiSelesai = "Berlaku 1 bulan";
-            break;
-        case 2:
-            item.namaLayanan = "Paket 40kg/bulan";
-            item.hargaPerUnit = 280000.0;
-            item.estimasiSelesai = "Berlaku 1 bulan";
-            break;
-        case 3:
-            item.namaLayanan = "Paket >40kg/bulan";
-            item.hargaPerUnit = 400000.0;
-            item.estimasiSelesai = "Berlaku 1 bulan";
-            break;
-        default:
-            item.namaLayanan = "";
-            return item;
-    }
-    
-    cout << "\nLayanan Terpilih: " << item.namaLayanan << endl;
-    item.namaItem = "Paket Langganan";
-    item.subTotalHarga = item.hargaPerUnit;
-    
-    return item;
-}
-
-    void Customer::tampilkanLayananTambahan() {
-        int pilihan;
-
-        do {
-            cout << "\n";
-            cout << string(40, '=') << endl;
-            cout << "        LAYANAN TAMBAHAN" << endl;
-            cout << string(40, '=') << endl;
-            cout << "1. Parfum Laundry" << endl;
-            cout << "2. Softener Bunga" << endl;
-            cout << "0. Kembali" << endl;
-            cout << string(40, '=') << endl;
-
-            pilihan = validasiInput(0, 2, "Pilih Menu : ");
-
-            switch (pilihan) {
-
-            case 1: {
-                tampilkanParfumLaundry();
-
-                int pilihParfum = validasiInput(0, 6, "Pilih Parfum : ");
-
-                if (pilihParfum != 0) {
-                    PesananItem item = prosesParfumLaundry(pilihParfum);
-                    tambahKeKeranjang(item);
-                }
-
-                break;
-            }
-
             case 2: {
-                tampilkanSoftener();
-
-                int pilihSoftener = validasiInput(0, 8, "Pilih Softener : ");
-
-                if (pilihSoftener != 0) {
-                    PesananItem item = prosesSoftener(pilihSoftener);
-                    tambahKeKeranjang(item);
+                string usernameBaru;
+                cout << "Username baru: ";
+                cin >> usernameBaru;
+                bool usernameSudahAda = false;
+                for(int i = 0; i < jumlahPengguna; ++i) {
+                    if(userArr[i].username == usernameBaru && i != indeks) {
+                        usernameSudahAda = true;
+                        break;
+                    }
                 }
-
+                if(usernameSudahAda) {
+                    cout << "Username sudah digunakan oleh pengguna lain. Silakan pilih yang lain.\n\n";
+                } else {
+                    current.username = usernameBaru;
+                    cout << "Username berhasil diperbarui.\n\n";
+                }
+                pauseScreen();
+                clearScreen();
                 break;
             }
-
+            case 3:
+                cout << "Password baru: ";
+                cin >> current.password;
+                cout << "Password berhasil diperbarui.\n\n";
+                pauseScreen();
+                clearScreen();
+                break;
+            case 4:
+                cout << "Alamat baru: ";
+                cin.ignore();
+                getline(cin, current.alamat);
+                cout << "Alamat berhasil diperbarui.\n\n";
+                pauseScreen();
+                clearScreen();
+                break;
+            case 5:
+                cout << "No. Telepon baru: ";
+                cin >> current.noTelepon;
+                cout << "No. Telepon berhasil diperbarui.\n\n";
+                pauseScreen();
+                clearScreen();
+                break;
+            case 6:
+                cout << endl;
+                cout << "Nama        : " << current.nama << endl;
+                cout << "Username    : " << current.username << endl;
+                cout << "Password    : " << current.password << endl;
+                cout << "Alamat      : " << current.alamat << endl;
+                cout << "No. Telepon : " << current.noTelepon << endl;
+                cout << endl;
+                pauseScreen();
+                clearScreen();
+                break;
             case 0:
-                return;
-
-            default:
-                cout << "Pilihan tidak valid." << endl;
+                selesai = true;
+                break;
             }
-
-        } while (true);
+        }
+    }
+            
+    void Customer::tampilkanInformasiAkun() {
+        User &current = user[indeksAktif];
+        cout << endl;
+        cout << "Nama        : " << current.nama << endl;
+        cout << "Username    : " << current.username << endl;
+        cout << "Password    : " << current.password << endl;
+        cout << "Alamat      : " << current.alamat << endl;
+        cout << "No. Telepon : " << current.noTelepon << endl;
     }
 
-    void Customer::tampilkanParfumLaundry() {
+    void Customer::ulasanRating() {
+        string komentar;
+        int rating;
+        while (true) {
+            cout << "Berikan Rating (1 - 5): ";
+            cin >> rating;
+            if (rating < 1 || rating > 5) {
+                cout << "Rating harus antara 1 sampai 5." << endl << endl;
+            } else {
+                break;
+            }
+        }
+        cout << "Berikan Ulasan: ";
+        cin.ignore();
+        getline(cin, komentar);
+        cout << "Ulasan ditambahkan." << endl;
+        pauseScreen();
+        ofstream file("ulasanRating.txt", ios::app);
+        if (!file.is_open()) {
+            cout << "Gagal membuka file untuk menyimpan komentar dan rating!" << endl;
+            pauseScreen();
+            return;
+        }
+        file << user[indeksAktif].username << " " << rating << " " << komentar << endl;
+        file.close();
+    }
+
+    void Customer::lihatPoin() {
+        cout << "Poin Anda saat ini: " << user[indeksAktif].poin << endl;
+    }
+
+    void Customer::kosongkanKeranjang() {
+        jumlahKeranjang = 0;
+    }
+
+    void Customer::tambahKeKeranjang(const PesananItem& item) {
+        if (item.namaLayanan != "" && jumlahKeranjang < MAX_KERANJANG) {
+            keranjangLayanan[jumlahKeranjang++] = item;
+            tampilkanRingkasanItem(item);
+            cout << "\nItem berhasil ditambahkan ke keranjang!" << endl;
+            cout << endl;
+        }
+    }
+
+    void Customer::tampilkanKeranjang() {
+        if (jumlahKeranjang == 0) {
+            cout << "\nKeranjang kosong!" << endl;
+            return;
+        }
+        cout << "\n" << string(50, '=') << endl;
+        cout << "                KERANJANG BELANJA" << endl;
+        cout << string(50, '=') << endl;
+        totalBiaya = 0.0;
+        int i;
+        for (i = 0; i < jumlahKeranjang; ++i) {
+            const PesananItem& item = keranjangLayanan[i];
+            cout << "\nItem ke-" << (i + 1) << ":" << endl;
+            cout << string(30, '-') << endl;
+            cout << "Kategori   \t: " << item.kategoriLayanan << endl;
+            cout << "Layanan    \t: " << item.namaLayanan << endl;
+            cout << "Item       \t: " << item.namaItem << endl;
+            cout << "Jumlah     \t: " << fixed << setprecision(1) << item.beratAtauJumlah << " " << item.unitSatuan << endl;
+            cout << "Harga per " << item.unitSatuan << "\t: Rp " << fixed << setprecision(0) << item.hargaPerUnit << endl;
+            cout << "Subtotal   \t: Rp " << item.subTotalHarga << endl;
+            cout << "Estimasi   \t: " << item.estimasiSelesai << endl;
+            totalBiaya += item.subTotalHarga;
+        }
+        cout << "\n" << string(50, '=') << endl;
+        cout << "TOTAL KESELURUHAN: Rp " << fixed << setprecision(0) << totalBiaya << endl;
+        cout << string(50, '=') << endl;
+    }
+
+    void Customer::hapusItemKeranjang() {
+        if (jumlahKeranjang == 0) {
+            cout << "\nKeranjang kosong!" << endl;
+            return;
+        }
+        tampilkanKeranjang();
+        int pilihan = inputValidasi<int>("Pilih nomor item yang ingin dihapus: ");
+        if (pilihan >= 1 && pilihan <= jumlahKeranjang) {
+            int i;
+            for (i = pilihan - 1; i < jumlahKeranjang - 1; ++i) {
+                keranjangLayanan[i] = keranjangLayanan[i + 1];
+            }
+            jumlahKeranjang--;
+            cout << "\nItem berhasil dihapus!" << endl;
+        } else {
+            cout << "\nNomor item tidak valid!" << endl;
+        }
+    }
+
+    void Customer::tampilkanRingkasanItem(const PesananItem& item) {
+        cout << "\n" << string(35, '-') << endl;
+        cout << "     RINGKASAN ITEM SAAT INI" << endl;
+        cout << string(35, '-') << endl;
+        cout << "Kategori   : " << item.kategoriLayanan << endl;
+        cout << "Layanan    : " << item.namaLayanan << endl;
+        cout << "Item       : " << item.namaItem << endl;
+        cout << "Jumlah     : " << fixed << setprecision(1) << item.beratAtauJumlah << " " << item.unitSatuan << endl;
+        cout << "Harga per " << item.unitSatuan << " : Rp " << fixed << setprecision(0) << item.hargaPerUnit << endl;
+        cout << "Subtotal   : Rp " << item.subTotalHarga << endl;
+        cout << "Estimasi   : " << item.estimasiSelesai << endl;
+        cout << string(35, '-') << endl;
+    }
+
+    void Customer::tampilkanMenuCustomer() {
+        tampilkanHeader("MENU CUSTOMER");
+
         cout << "\n";
-        cout << string(45, '=') << endl;
-        cout << "          PARFUM LAUNDRY" << endl;
-        cout << string(45, '=') << endl;
+        cout << " [1] Akun\n";
+        cout << " [2] Lihat Poin\n";
+        cout << " [3] Layanan Laundry\n";
+        cout << " [4] Check Status Cucian\n";
+        cout << " [5] Notifikasi\n";
+        cout << " [6] Jadwal Pengambilan\n";
 
-        cout << "1. Sakura Fresh      Rp3.000 / 10 ml" << endl;
-        cout << "2. Lavender Bloom    Rp3.000 / 10 ml" << endl;
-        cout << "3. Ocean Breeze      Rp3.000 / 10 ml" << endl;
-        cout << "4. Floral Garden     Rp4.000 / 10 ml" << endl;
-        cout << "5. Baby Powder       Rp4.000 / 10 ml" << endl;
-        cout << "6. Jasmine Premium   Rp5.000 / 10 ml" << endl;
+        garis();
 
-        cout << "0. Kembali" << endl;
-        cout << string(45, '=') << endl;
-    }
-PesananItem Customer::prosesParfumLaundry(int pilihan)
-{
-    PesananItem item;
+        cout << " [0] Logout\n\n";
 
-    item.kategoriLayanan = "Parfum";
-    item.unitSatuan = "10 ml";
-
-    cout << "\nJumlah Parfum (1 = 10 ml) : ";
-    cin >> item.jumlahBahan;
-
-    switch (pilihan)
-    {
-        case 1:
-            item.namaItem = "Sakura Fresh";
-            item.namaLayanan = "Sakura Fresh";
-            item.hargaPerUnit = 3000;
-            break;
-
-        case 2:
-            item.namaItem = "Lavender Bloom";
-            item.namaLayanan = "Lavender Bloom";
-            item.hargaPerUnit = 3000;
-            break;
-
-        case 3:
-            item.namaItem = "Ocean Breeze";
-            item.namaLayanan = "Ocean Breeze";
-            item.hargaPerUnit = 3000;
-            break;
-
-        case 4:
-            item.namaItem = "Floral Garden";
-            item.namaLayanan = "Floral Garden";
-            item.hargaPerUnit = 4000;
-            break;
-
-        case 5:
-            item.namaItem = "Baby Powder";
-            item.namaLayanan = "Baby Powder";
-            item.hargaPerUnit = 4000;
-            break;
-
-        case 6:
-            item.namaItem = "Jasmine Premium";
-            item.namaLayanan = "Jasmine Premium";
-            item.hargaPerUnit = 5000;
-            break;
-
-        default:
-            item.namaLayanan = "";
-            return item;
+        tampilkanFooter();
+        cout << "Pilih Menu : ";
     }
 
-    cout << "\nParfum yang dipilih : " << item.namaItem << endl;
+    void Customer::prosesMenuCustomer() {
+        int subPilihan;
+        while(true) {
+            tampilkanMenuCustomer();
+            cin >> subPilihan;
+            if(subPilihan == 1) {
+                clearScreen();
+                int pill;
+                while (true) {
+                    tampilkanAkunMenu();
+                    cin >> pill;
+                    clearScreen();
+                    if(pill == 1) {
+                        pengaturanAkun(user, indeksAktif, jumlahPengguna);
+                        saveUsers();
+                        clearScreen();
+                    } else if(pill == 2) {
+                        ulasanRating();
+                        clearScreen();
+                    } else if(pill == 0) {
+                        break;
+                    } else {
+                        cout << "\nPilihan tidak valid.\n\n";
+                        pauseScreen();
+                        clearScreen();
+                    }
+                }
+            } else if(subPilihan == 2) {
+                lihatPoin();
+                cout << endl;
+                pauseScreen();
+                clearScreen();
+            } else if(subPilihan == 3) {
+                clearScreen();
+                prosesMenuLayanan();
+            } else if(subPilihan == 4) {
+                clearScreen();
+                checkStatusCucian();
+                manajemenJadwal.periksaKeterlambatan();  // ? BARU: CEK KETERLAMBATAN
+            } else if(subPilihan == 5) {  // ? BARU: MENU NOTIFIKASI
+                clearScreen();
+                manajemenJadwal.lihatNotifikasi();
+                pauseScreen();
+                clearScreen();
+            } else if(subPilihan == 6) {  // ? BARU: MENU JADWAL PENGAMBILAN
+                clearScreen();
+                manajemenJadwal.tampilanKalenderJadwal();
+                string kode;
+                cout << "\nMasukkan kode transaksi untuk konfirmasi pengambilan (atau 0 untuk kembali): ";
+                cin >> kode;
+                if (kode != "0") {
+                    manajemenJadwal.konfirmasiPengambilan(kode);
+                }
+                pauseScreen();
+                clearScreen();
+            } else if(subPilihan == 0) {
+                cout << "\nLogout berhasil.\n\n";
+                pauseScreen();
+                clearScreen();
+                indeksAktif = -1;
+                break;
+            } else {
+                cout << "\nPilihan tidak valid.\n\n";
+                pauseScreen();
+                clearScreen();
+            }
+        }
+    }
 
-    // jumlah yang dimasukkan customer
-    item.beratAtauJumlah = item.jumlahBahan;
+    void Customer::checkStatusCucian() {
+        loadRiwayatTransaksi();  
 
-    // harga
-    item.subTotalHarga = item.jumlahBahan * item.hargaPerUnit;
+        string nama = user[indeksAktif].nama;
+        bool ditemukan = false;
 
-    return item;
-}
+        for (int i = 0; i < jumlahData; ++i) {
+            if (riwayat[i].nama == nama && riwayat[i].status != "Selesai") {
+                cout << "\n--- STATUS CUCIAN ---\n";
+                cout << riwayat[i].detailTransaksi << endl;
+                ditemukan = true;
+            }
+        }
 
-    void Customer::tampilkanSoftener()
-    {
+        if (!ditemukan) {
+            cout << "Saat ini Anda tidak memiliki cucian yang sedang dalam proses.\n";
+        }
+
+        cout << endl;
+        pauseScreen();
+        clearScreen();
+    }
+
+
+    void Customer::tampilkanDaftarLayanan() {
+        tampilkanHeader("DAFTAR LAYANAN");
+
         cout << "\n";
-        cout << string(45,'=') << endl;
-        cout << "          SOFTENER BUNGA" << endl;
-        cout << string(45,'=') << endl;
 
-        cout << "1. Mawar             Rp2.000 / 10 ml" << endl;
-        cout << "2. Melati            Rp2.000 / 10 ml" << endl;
-        cout << "3. Lavender          Rp2.000 / 10 ml" << endl;
-        cout << "4. Sakura            Rp3.000 / 10 ml" << endl;
-        cout << "5. Anggrek           Rp3.000 / 10 ml" << endl;
-        cout << "6. Lily              Rp3.000 / 10 ml" << endl;
-        cout << "7. Edelweiss         Rp4.000 / 10 ml" << endl;
-        cout << "8. Magnolia          Rp4.000 / 10 ml" << endl;
-        cout << "0. Kembali" << endl;
-        cout << string(45,'=') << endl;
+        cout << " [1] Cuci Umum\n";
+        cout << " [2] Satuan Premium\n";
+        cout << " [3] Khusus Barang\n";
+        cout << " [4] Dry Cleaning\n";
+        cout << " [5] Express\n";
+        cout << " [6] Antar Jemput\n";
+        cout << " [7] Paket Langganan\n";
+        cout << " [8] Layanan Tambahan\n";
+
+        garis();
+
+        cout << " [9]  Keranjang\n";
+        cout << " [10] Hapus Keranjang\n";
+        cout << " [11] Checkout\n";
+        cout << " [12] Cari Layanan\n";
+
+        garis();
+
+        cout << " [0] Kembali\n";
+
+        tampilkanFooter();
     }
 
-    PesananItem Customer::prosesSoftener(int pilihan)
+    string toLowerCase(string teks) {
+        for (int i = 0; i < teks.length(); i++) {
+            if (teks[i] >= 'A' && teks[i] <= 'Z') {
+                teks[i] = teks[i] + 32;
+            }
+        }
+        return teks;
+    }
+
+    string toUpperCase(string teks) {
+        for (int i = 0; i < teks.length(); i++) {
+            if (teks[i] >= 'a' && teks[i] <= 'z') {
+                teks[i] = teks[i] - 32;
+            }
+        }
+        return teks;
+    }
+
+    // Linear Search untuk Mencari Nama Layanan
+    void Customer::cariLayananByNama(const string& keyword) {
+        bool ditemukan = false;
+
+        string keywordLower = toLowerCase(keyword);
+
+        for (int i = 0; i < jumlahLayanan; i++) {
+
+            string namaLower = toLowerCase(layanan[i].namaLayanan);
+
+            if (namaLower.find(keywordLower) != string::npos) {
+                ditemukan = true;
+
+                cout << "\n--- LAYANAN DITEMUKAN ---" << endl;
+                cout << "Nama Layanan : " << layanan[i].namaLayanan << endl;
+                cout << "Kategori     : " << layanan[i].kategori << endl;
+                cout << "Harga        : Rp " << layanan[i].harga << endl;
+                cout << "Satuan       : " << layanan[i].satuan << endl;
+            }
+        }
+
+        if (!ditemukan) {
+            cout << "Layanan dengan kata kunci \"" << keyword
+                << "\" tidak ditemukan!" << endl;
+        }
+    }
+
+    string buatKodeTransaksi()
+    {
+        ifstream file("riwayat_transaksi.txt");
+
+        time_t sekarang = time(0);
+        tm *waktu = localtime(&sekarang);
+
+        stringstream tanggalHariIni;
+        tanggalHariIni << setw(2) << setfill('0') << (waktu->tm_year + 1900) % 100
+                    << setw(2) << setfill('0') << waktu->tm_mon + 1
+                    << setw(2) << setfill('0') << waktu->tm_mday;
+
+        string kodeTanggal = tanggalHariIni.str();
+
+        int jumlahHariIni = 0;
+        string baris;
+
+        while (getline(file, baris))
+        {
+            size_t pos = baris.find("Kode Transaksi : ");
+
+            if (pos != string::npos)
+            {
+                string kode = baris.substr(pos + 17);
+
+                if (kode.length() >= 11)
+                {
+                    if (kode.substr(5,6) == kodeTanggal)
+                    {
+                        jumlahHariIni++;
+                    }
+                }
+            }
+        }
+
+        file.close();
+
+        stringstream hasil;
+
+        hasil << "AMBA/"
+            << kodeTanggal
+            << "/"
+            << setw(3)
+            << setfill('0')
+            << jumlahHariIni + 1;
+
+        return hasil.str();
+    }
+
+
+    void Customer::prosesMenuLayanan() {
+        int pilihan;
+        do {
+            tampilkanDaftarLayanan();
+            pilihan = validasiInput(0, 12, "Pilih layanan (0-12): ");
+            switch (pilihan) {
+                case CUCI_UMUM: {
+                    int subPilihan;
+                    tampilkanLayananCuciUmum();
+                    subPilihan = inputValidasi<int>("Pilih sub-layanan (0 untuk kembali): ");
+                    if (subPilihan != 0) {
+                        PesananItem item = prosesLayananCuciUmum(subPilihan);
+                        tambahKeKeranjang(item);
+                    }
+                    break;
+                }
+                case SATUAN_PREMIUM: {
+                    int subPilihan;
+                    tampilkanLayananSatuanPremium();
+                    subPilihan = inputValidasi<int>("Pilih sub-layanan (0 untuk kembali): ");
+                    if (subPilihan != 0) {
+                        PesananItem item = prosesLayananSatuanPremium(subPilihan);
+                        tambahKeKeranjang(item);
+                    }
+                    break;
+                }
+                case KHUSUS_BARANG: {
+                    int subPilihan;
+                    tampilkanLayananKhususBarang();
+                    subPilihan = inputValidasi<int>("Pilih sub-layanan (0 untuk kembali): ");
+                    if (subPilihan != 0) {
+                        PesananItem item = prosesLayananKhususBarang(subPilihan);
+                        tambahKeKeranjang(item);
+                    }
+                    break;
+                }
+                case DRY_CLEANING: {
+                    int subPilihan;
+                    tampilkanLayananDryCleaning();
+                    subPilihan = validasiInput(0, 10, "Pilih sub-layanan (0 untuk kembali): ");
+                    if (subPilihan != 0) {
+                        PesananItem item = prosesLayananDryCleaning(subPilihan);
+                        tambahKeKeranjang(item);
+                    }
+                    break;
+                }
+                case EXPRESS: {
+                    int subPilihan;
+                    tampilkanLayananExpress();
+                    subPilihan = validasiInput(0, 10, "Pilih sub-layanan (0 untuk kembali): ");
+                    if (subPilihan != 0) {
+                        PesananItem item = prosesLayananExpress(subPilihan);
+                        tambahKeKeranjang(item);
+                    }
+                    break;
+                }
+                case ANTAR_JEMPUT: {
+                    int subPilihan;
+                    tampilkanLayananAntarJemput();
+                    subPilihan = validasiInput(0, 10, "Pilih sub-layanan (0 untuk kembali): ");
+                    if (subPilihan != 0) {
+                        PesananItem item = prosesLayananAntarJemput(subPilihan);
+                        tambahKeKeranjang(item);
+                    }
+                    break;
+                }
+                case PAKET_LANGGANAN: {
+                    int subPilihan;
+                    tampilkanLayananPaketLangganan();
+                    subPilihan = validasiInput(0, 10, "Pilih sub-layanan (0 untuk kembali): ");
+                    if (subPilihan != 0) {
+                        PesananItem item = prosesLayananPaketLangganan(subPilihan);
+                        tambahKeKeranjang(item);
+                    }
+                    break;
+                }
+                case 8:
+                    tampilkanLayananTambahan();
+                    break;
+
+                case 9:
+                    tampilkanKeranjang();
+                    break;
+
+                case 10:
+                    hapusItemKeranjang();
+                    break;
+
+                case 11: {
+                    int pilihanMetode;
+                    string metode;
+
+                    cout << "\nPilih metode pembayaran:\n";
+                    cout << "1. Cash\n";
+                    cout << "2. Transfer\n";
+                    cout << "3. Qris\n";
+                    cout << "4. E-Wallet\n";
+
+                    pilihanMetode = validasiInput(1, 4, "Pilihan Anda (1-4): ");
+
+                    switch (pilihanMetode) {
+                        case 1:
+                            metode = "Cash";
+                            break;
+
+                        case 2:
+                            metode = "Transfer";
+                            break;
+
+                        case 3:
+                            metode = "Qris";
+                            break;
+
+                        case 4: {
+                            int pilihanEwallet;
+
+                            cout << "\nPilih jenis E-Wallet:\n";
+                            cout << "1. GoPay\n";
+                            cout << "2. ShopeePay\n";
+                            cout << "3. OVO\n";
+                            cout << "4. DANA\n";
+
+                            pilihanEwallet = validasiInput(1, 4, "Pilihan Anda (1-4): ");
+
+                            string jenisEwallet;
+
+                            switch (pilihanEwallet) {
+                                case 1:
+                                    jenisEwallet = "GoPay";
+                                    break;
+
+                                case 2:
+                                    jenisEwallet = "ShopeePay";
+                                    break;
+
+                                case 3:
+                                    jenisEwallet = "OVO";
+                                    break;
+
+                                case 4:
+                                    jenisEwallet = "DANA";
+                                    break;
+
+                                default:
+                                    cout << "Pilihan E-Wallet tidak valid.\n";
+                                    pauseScreen();
+                                    clearScreen();
+                                    return;
+                            }
+
+                            metode = "E-Wallet - " + jenisEwallet;
+                            break;
+                        }
+
+                        default:
+                            cout << "Pilihan metode pembayaran tidak valid.\n";
+                            pauseScreen();
+                            clearScreen();
+                            return;
+                    }
+
+                    string kodeTransaksi = buatKodeTransaksi();
+
+                    Admin adminStatistik;
+
+                    for (int i = 0; i < jumlahKeranjang; i++) {
+
+                        adminStatistik.updateStatistikLayanan(
+                            keranjangLayanan[i].namaLayanan
+                        );
+
+                    }
+
+                    Admin adminStok;
+
+                    for(int i = 0; i < jumlahKeranjang; i++)
+                    {
+                        if(keranjangLayanan[i].kategoriLayanan == "Parfum" ||
+                        keranjangLayanan[i].kategoriLayanan == "Softener")
+                        {
+                            adminStok.gunakanBahan(
+                                keranjangLayanan[i].namaLayanan,
+                                keranjangLayanan[i].jumlahBahan
+                            );
+                        }
+                    }
+
+                    tampilkanStruk(metode, kodeTransaksi);
+
+                    simpanRiwayatTransaksi(metode, kodeTransaksi);
+
+                    kosongkanKeranjang();
+
+                    cout << "\nTerima kasih telah menggunakan layanan kami!\n";
+                    pauseScreen();
+                    clearScreen();
+                    return;
+                }
+
+                case 12: {
+                    string keyword;
+
+                    cout << "Masukkan nama layanan yang ingin dicari: ";
+                    cin.ignore();
+                    getline(cin, keyword);
+
+                    cariLayananByNama(keyword);
+                    cout << endl;
+                    break;
+                }
+                default:
+                    cout << "\nPilihan tidak valid. Silakan coba lagi.\n\n";
+            }
+            pauseScreen();
+            clearScreen();
+        } while (pilihan != 0);
+    }
+
+    // Fungsi untuk menampilkan sub layanan Cuci Umum
+    void Customer::tampilkanLayananCuciUmum() {
+        cout << "\n--- Detail Layanan Cuci Umum ---" << endl;
+        cout << "1. Cuci Kering (Rp 5.000/kg)" << endl;
+        cout << "2. Cuci Basah (Rp 4.000/kg)" << endl;
+        cout << "3. Cuci Setrika (Rp 7.000/kg)" << endl;
+        cout << "4. Setrika Saja (Rp 4.000/kg)" << endl;
+        cout << "0. Kembali" << endl;
+        cout << string(32, '-') << endl;
+    }
+
+    // Fungsi untuk memproses layanan Cuci Umum
+    PesananItem Customer::prosesLayananCuciUmum(int pilihan) {
+        PesananItem item;
+        item.kategoriLayanan = "Cuci Umum";
+        item.unitSatuan = "kg";
+        
+        switch (pilihan) {
+            case 1:
+                item.namaLayanan = "Cuci Kering";
+                item.hargaPerUnit = 5000.0;
+                item.estimasiSelesai = "1-2 hari";
+                break;
+            case 2:
+                item.namaLayanan = "Cuci Basah";
+                item.hargaPerUnit = 4000.0;
+                item.estimasiSelesai = "1 hari";
+                break;
+            case 3:
+                item.namaLayanan = "Cuci Setrika";
+                item.hargaPerUnit = 7000.0;
+                item.estimasiSelesai = "2-3 hari";
+                break;
+            case 4:
+                item.namaLayanan = "Setrika Saja";
+                item.hargaPerUnit = 4000.0;
+                item.estimasiSelesai = "1-2 hari";
+                break;
+            default:
+                item.namaLayanan = "";
+                return item;
+        }
+        
+        cout << "\nLayanan Terpilih: " << item.namaLayanan << endl;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        item.namaItem = inputString("Jenis item (Baju/Celana/Campuran): ");
+        item.beratAtauJumlah = inputValidasi<double>("Masukkan berat (kg): ");
+        item.subTotalHarga = item.beratAtauJumlah * item.hargaPerUnit;
+        
+        return item;
+    }
+
+    // Fungsi untuk menampilkan sub layanan Satuan Premium
+    void Customer::tampilkanLayananSatuanPremium() {
+        cout << "\n--- Detail Layanan Satuan (Premium) ---" << endl;
+        cout << "1. Kemeja/Kaos (Rp 7.000/helai)" << endl;
+        cout << "2. Celana/Rok (Rp 7.000/helai)" << endl;
+        cout << "3. Jaket/Sweater (Rp 15.000/helai)" << endl;
+        cout << "4. Jas/Blazer (Rp 35.000/helai)" << endl;
+        cout << "5. Gaun/Kebaya (Rp 35.000/helai)" << endl;
+        cout << "0. Kembali" << endl;
+        cout << string(39, '-') << endl;
+    }
+
+    // Fungsi untuk memproses layanan Satuan Premium
+    PesananItem Customer::prosesLayananSatuanPremium(int pilihan) {
+        PesananItem item;
+        item.kategoriLayanan = "Satuan Premium";
+        item.unitSatuan = "helai";
+        
+        switch (pilihan) {
+            case 1:
+                item.namaLayanan = "Kemeja/Kaos";
+                item.hargaPerUnit = 7000.0;
+                item.estimasiSelesai = "1-2 hari";
+                break;
+            case 2:
+                item.namaLayanan = "Celana/Rok";
+                item.hargaPerUnit = 7000.0;
+                item.estimasiSelesai = "1-2 hari";
+                break;
+            case 3:
+                item.namaLayanan = "Jaket/Sweater";
+                item.hargaPerUnit = 15000.0;
+                item.estimasiSelesai = "2 hari";
+                break;
+            case 4:
+                item.namaLayanan = "Jas/Blazer";
+                item.hargaPerUnit = 35000.0;
+                item.estimasiSelesai = "3-4 hari";
+                break;
+            case 5:
+                item.namaLayanan = "Gaun/Kebaya";
+                item.hargaPerUnit = 35000.0;
+                item.estimasiSelesai = "3-4 hari";
+                break;
+            default:
+                item.namaLayanan = "";
+                return item;
+        }
+        
+        cout << "\nLayanan Terpilih: " << item.namaLayanan << endl;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        item.namaItem = inputString("Jenis item spesifik: ");
+        item.beratAtauJumlah = inputValidasi<double>("Masukkan jumlah (helai): ");
+        item.subTotalHarga = item.beratAtauJumlah * item.hargaPerUnit;
+        
+        return item;
+    }
+
+    // Fungsi untuk menampilkan sub layanan Khusus Barang
+    void Customer::tampilkanLayananKhususBarang() {
+        cout << "\n--- Detail Layanan Khusus Barang ---" << endl;
+        cout << "1. Cuci Sepatu Reguler (Rp 40.000/pasang)" << endl;
+        cout << "2. Cuci Sepatu Premium (Rp 65.000/pasang)" << endl;
+        cout << "3. Cuci Tas (Rp 40.000/buah)" << endl;
+        cout << "4. Cuci Helm (Rp 35.000/buah)" << endl;
+        cout << "5. Cuci Gorden (Rp 35.000/meter)" << endl;
+        cout << "6. Cuci Karpet (Rp 30.000/lembar)" << endl;
+        cout << "7. Cuci Sprei/Bedcover (Rp 25.000/set)" << endl;
+        cout << "8. Cuci Selimut/Bantal (Rp 25.000/buah)" << endl;
+        cout << "0. Kembali" << endl;
+        cout << string(40, '-') << endl;
+    }
+
+    // Fungsi untuk memproses layanan Khusus Barang
+    PesananItem Customer::prosesLayananKhususBarang(int pilihan) {
+        PesananItem item;
+        item.kategoriLayanan = "Khusus Barang";
+        
+        switch (pilihan) {
+            case 1:
+                item.namaLayanan = "Cuci Sepatu Reguler";
+                item.hargaPerUnit = 40000.0;
+                item.estimasiSelesai = "2-3 hari";
+                item.unitSatuan = "pasang";
+                break;
+            case 2:
+                item.namaLayanan = "Cuci Sepatu Premium";
+                item.hargaPerUnit = 65000.0;
+                item.estimasiSelesai = "3-4 hari";
+                item.unitSatuan = "pasang";
+                break;
+            case 3:
+                item.namaLayanan = "Cuci Tas";
+                item.hargaPerUnit = 40000.0;
+                item.estimasiSelesai = "3-5 hari";
+                item.unitSatuan = "buah";
+                break;
+            case 4:
+                item.namaLayanan = "Cuci Helm";
+                item.hargaPerUnit = 35000.0;
+                item.estimasiSelesai = "1-2 hari";
+                item.unitSatuan = "buah";
+                break;
+            case 5:
+                item.namaLayanan = "Cuci Gorden";
+                item.hargaPerUnit = 35000.0;
+                item.estimasiSelesai = "3-5 hari";
+                item.unitSatuan = "meter";
+                break;
+            case 6:
+                item.namaLayanan = "Cuci Karpet";
+                item.hargaPerUnit = 30000.0;
+                item.estimasiSelesai = "4-6 hari";
+                item.unitSatuan = "lembar";
+                break;
+            case 7:
+                item.namaLayanan = "Sprei/Bedcover";
+                item.hargaPerUnit = 25000.0;
+                item.estimasiSelesai = "2-3 hari";
+                item.unitSatuan = "set";
+                break;
+            case 8:
+                item.namaLayanan = "Selimut/Bantal";
+                item.hargaPerUnit = 25000.0;
+                item.estimasiSelesai = "2-3 hari";
+                item.unitSatuan = "buah";
+                break;
+            default:
+                item.namaLayanan = "";
+                return item;
+        }
+        
+        cout << "\nLayanan Terpilih: " << item.namaLayanan << endl;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        item.namaItem = inputString("Jenis item spesifik: ");
+        item.beratAtauJumlah = inputValidasi<double>("Masukkan jumlah (" + item.unitSatuan + "): ");
+        item.subTotalHarga = item.beratAtauJumlah * item.hargaPerUnit;
+        
+        return item;
+    }
+
+    // Fungsi untuk menampilkan sub layanan Dry Cleaning
+    void Customer::tampilkanLayananDryCleaning() {
+        cout << "\n--- Detail Layanan Dry Cleaning ---" << endl;
+        cout << "1. Jas Formal (Rp 60.000/helai)" << endl;
+        cout << "2. Gaun Malam (Rp 80.000/helai)" << endl;
+        cout << "3. Kebaya (Rp 60.000/helai)" << endl;
+        cout << "4. Pakaian Sutera (Rp 100.000/helai)" << endl;
+        cout << "0. Kembali" << endl;
+        cout << string(36, '-') << endl;
+    }
+
+    // Fungsi untuk memproses layanan Dry Cleaning
+    PesananItem Customer::prosesLayananDryCleaning(int pilihan) {
+        PesananItem item;
+        item.kategoriLayanan = "Dry Cleaning";
+        item.unitSatuan = "helai";
+        
+        switch (pilihan) {
+            case 1:
+                item.namaLayanan = "Jas Formal";
+                item.hargaPerUnit = 60000.0;
+                item.estimasiSelesai = "2-4 hari";
+                break;
+            case 2:
+                item.namaLayanan = "Gaun Malam";
+                item.hargaPerUnit = 80000.0;
+                item.estimasiSelesai = "3-5 hari";
+                break;
+            case 3:
+                item.namaLayanan = "Kebaya";
+                item.hargaPerUnit = 60000.0;
+                item.estimasiSelesai = "3-5 hari";
+                break;
+            case 4:
+                item.namaLayanan = "Pakaian Sutera";
+                item.hargaPerUnit = 100000.0;
+                item.estimasiSelesai = "3-5 hari";
+                break;
+            default:
+                item.namaLayanan = "";
+                return item;
+        }
+        
+        cout << "\nLayanan Terpilih: " << item.namaLayanan << endl;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        item.namaItem = inputString("Jenis item spesifik: ");
+        item.beratAtauJumlah = inputValidasi<double>("Masukkan jumlah (helai): ");
+        item.subTotalHarga = item.beratAtauJumlah * item.hargaPerUnit;
+        
+        return item;
+    }
+
+    // Fungsi untuk menampilkan sub layanan Express
+    void Customer::tampilkanLayananExpress() {
+        cout << "\n--- Detail Layanan Express ---" << endl;
+        cout << "1. Same Day Service (Rp 20.000/kg)" << endl;
+        cout << "2. Next Day Service (Rp 10.000/kg)" << endl;
+        cout << "0. Kembali" << endl;
+        cout << string(31, '-') << endl;
+    }
+
+    // Fungsi untuk memproses layanan Express
+    PesananItem Customer::prosesLayananExpress(int pilihan) {
+        PesananItem item;
+        item.kategoriLayanan = "Express";
+        item.unitSatuan = "kg";
+        
+        switch (pilihan) {
+            case 1:
+                item.namaLayanan = "Same Day Service";
+                item.hargaPerUnit = 20000.0;
+                item.estimasiSelesai = "Selesai hari yang sama";
+                break;
+            case 2:
+                item.namaLayanan = "Next Day Service";
+                item.hargaPerUnit = 10000.0;
+                item.estimasiSelesai = "Selesai besok hari";
+                break;
+            default:
+                item.namaLayanan = "";
+                return item;
+        }
+        
+        cout << "\nLayanan Terpilih: " << item.namaLayanan << endl;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        item.namaItem = inputString("Jenis item (Baju/Celana/Campuran): ");
+        item.beratAtauJumlah = inputValidasi<double>("Masukkan berat (kg): ");
+        item.subTotalHarga = item.beratAtauJumlah * item.hargaPerUnit;
+        
+        return item;
+    }
+
+    // Fungsi untuk menampilkan sub layanan Antar Jemput
+    void Customer::tampilkanLayananAntarJemput() {
+        cout << "\n--- Detail Layanan Antar Jemput ---" << endl;
+        cout << "1. Radius < 5 KM (Rp 15.000)" << endl;
+        cout << "2. Radius 5-10 KM (Rp 25.000)" << endl;
+        cout << "3. Di atas 10 KM (Rp 35.000)" << endl;
+        cout << "0. Kembali" << endl;
+        cout << string(35, '-') << endl;
+    }
+
+    // Fungsi untuk memproses layanan Antar Jemput
+    PesananItem Customer::prosesLayananAntarJemput(int pilihan) {
+        PesananItem item;
+        item.kategoriLayanan = "Antar Jemput";
+        item.unitSatuan = "layanan";
+        item.beratAtauJumlah = 1;
+        
+        switch (pilihan) {
+            case 1:
+                item.namaLayanan = "Antar Jemput < 5 KM";
+                item.hargaPerUnit = 15000.0;
+                item.estimasiSelesai = "Sesuai jadwal";
+                break;
+            case 2:
+                item.namaLayanan = "Antar Jemput 5-10 KM";
+                item.hargaPerUnit = 25000.0;
+                item.estimasiSelesai = "Sesuai jadwal";
+                break;
+            case 3:
+                item.namaLayanan = "Antar Jemput > 10 KM";
+                item.hargaPerUnit = 35000.0;
+                item.estimasiSelesai = "Sesuai jadwal";
+                break;
+            default:
+                item.namaLayanan = "";
+                return item;
+        }
+        
+        cout << "\nLayanan Terpilih: " << item.namaLayanan << endl;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        item.namaItem = inputString("Alamat tujuan: ");
+        item.subTotalHarga = item.hargaPerUnit;
+        
+        return item;
+    }
+
+    // Fungsi untuk menampilkan sub layanan Paket Langganan
+    void Customer::tampilkanLayananPaketLangganan() {
+        cout << "\n--- Detail Paket Langganan ---" << endl;
+        cout << "1. Paket 20kg/bulan (Rp 150.000)" << endl;
+        cout << "2. Paket 40kg/bulan (Rp 280.000)" << endl;
+        cout << "3. Paket > 40kg/bulan (Rp 400.000)" << endl;
+        cout << "0. Kembali" << endl;
+        cout << string(31, '-') << endl;
+    }
+
+    // Fungsi untuk memproses layanan Paket Langganan
+    PesananItem Customer::prosesLayananPaketLangganan(int pilihan) {
+        PesananItem item;
+        item.kategoriLayanan = "Paket Langganan";
+        item.unitSatuan = "paket";
+        item.beratAtauJumlah = 1;
+        
+        switch (pilihan) {
+            case 1:
+                item.namaLayanan = "Paket 20kg/bulan";
+                item.hargaPerUnit = 150000.0;
+                item.estimasiSelesai = "Berlaku 1 bulan";
+                break;
+            case 2:
+                item.namaLayanan = "Paket 40kg/bulan";
+                item.hargaPerUnit = 280000.0;
+                item.estimasiSelesai = "Berlaku 1 bulan";
+                break;
+            case 3:
+                item.namaLayanan = "Paket >40kg/bulan";
+                item.hargaPerUnit = 400000.0;
+                item.estimasiSelesai = "Berlaku 1 bulan";
+                break;
+            default:
+                item.namaLayanan = "";
+                return item;
+        }
+        
+        cout << "\nLayanan Terpilih: " << item.namaLayanan << endl;
+        item.namaItem = "Paket Langganan";
+        item.subTotalHarga = item.hargaPerUnit;
+        
+        return item;
+    }
+
+        void Customer::tampilkanLayananTambahan() {
+            int pilihan;
+
+            do {
+                cout << "\n";
+                cout << string(40, '=') << endl;
+                cout << "        LAYANAN TAMBAHAN" << endl;
+                cout << string(40, '=') << endl;
+                cout << "1. Parfum Laundry" << endl;
+                cout << "2. Softener Bunga" << endl;
+                cout << "0. Kembali" << endl;
+                cout << string(40, '=') << endl;
+
+                pilihan = validasiInput(0, 2, "Pilih Menu : ");
+
+                switch (pilihan) {
+
+                case 1: {
+                    tampilkanParfumLaundry();
+
+                    int pilihParfum = validasiInput(0, 6, "Pilih Parfum : ");
+
+                    if (pilihParfum != 0) {
+                        PesananItem item = prosesParfumLaundry(pilihParfum);
+                        tambahKeKeranjang(item);
+                    }
+
+                    break;
+                }
+
+                case 2: {
+                    tampilkanSoftener();
+
+                    int pilihSoftener = validasiInput(0, 8, "Pilih Softener : ");
+
+                    if (pilihSoftener != 0) {
+                        PesananItem item = prosesSoftener(pilihSoftener);
+                        tambahKeKeranjang(item);
+                    }
+
+                    break;
+                }
+
+                case 0:
+                    return;
+
+                default:
+                    cout << "Pilihan tidak valid." << endl;
+                }
+
+            } while (true);
+        }
+
+        void Customer::tampilkanParfumLaundry() {
+            cout << "\n";
+            cout << string(45, '=') << endl;
+            cout << "          PARFUM LAUNDRY" << endl;
+            cout << string(45, '=') << endl;
+
+            cout << "1. Sakura Fresh      Rp3.000 / 10 ml" << endl;
+            cout << "2. Lavender Bloom    Rp3.000 / 10 ml" << endl;
+            cout << "3. Ocean Breeze      Rp3.000 / 10 ml" << endl;
+            cout << "4. Floral Garden     Rp4.000 / 10 ml" << endl;
+            cout << "5. Baby Powder       Rp4.000 / 10 ml" << endl;
+            cout << "6. Jasmine Premium   Rp5.000 / 10 ml" << endl;
+
+            cout << "0. Kembali" << endl;
+            cout << string(45, '=') << endl;
+        }
+    PesananItem Customer::prosesParfumLaundry(int pilihan)
     {
         PesananItem item;
 
-        item.kategoriLayanan = "Softener";
+        item.kategoriLayanan = "Parfum";
         item.unitSatuan = "10 ml";
 
-        cout << "\nJumlah Softener (1 = 10 ml) : ";
+        cout << "\nJumlah Parfum (1 = 10 ml) : ";
         cin >> item.jumlahBahan;
 
-        switch(pilihan)
+        switch (pilihan)
         {
             case 1:
-                item.namaItem = "Mawar";
-                item.namaLayanan = "Softener Mawar";
-                item.hargaPerUnit = 2000;
+                item.namaItem = "Sakura Fresh";
+                item.namaLayanan = "Sakura Fresh";
+                item.hargaPerUnit = 3000;
                 break;
 
             case 2:
-                item.namaItem = "Melati";
-                item.namaLayanan = "Softener Melati";
-                item.hargaPerUnit = 2000;
+                item.namaItem = "Lavender Bloom";
+                item.namaLayanan = "Lavender Bloom";
+                item.hargaPerUnit = 3000;
                 break;
 
             case 3:
-                item.namaItem = "Lavender";
-                item.namaLayanan = "Softener Lavender";
-                item.hargaPerUnit = 2000;
+                item.namaItem = "Ocean Breeze";
+                item.namaLayanan = "Ocean Breeze";
+                item.hargaPerUnit = 3000;
                 break;
 
             case 4:
-                item.namaItem = "Sakura";
-                item.namaLayanan = "Softener Sakura";
-                item.hargaPerUnit = 3000;
+                item.namaItem = "Floral Garden";
+                item.namaLayanan = "Floral Garden";
+                item.hargaPerUnit = 4000;
                 break;
 
             case 5:
-                item.namaItem = "Anggrek";
-                item.namaLayanan = "Softener Anggrek";
-                item.hargaPerUnit = 3000;
+                item.namaItem = "Baby Powder";
+                item.namaLayanan = "Baby Powder";
+                item.hargaPerUnit = 4000;
                 break;
 
             case 6:
-                item.namaItem = "Lily";
-                item.namaLayanan = "Softener Lily";
-                item.hargaPerUnit = 3000;
-                break;
-
-            case 7:
-                item.namaItem = "Edelweiss";
-                item.namaLayanan = "Softener Edelweiss";
-                item.hargaPerUnit = 4000;
-                break;
-
-            case 8:
-                item.namaItem = "Magnolia";
-                item.namaLayanan = "Softener Magnolia";
-                item.hargaPerUnit = 4000;
+                item.namaItem = "Jasmine Premium";
+                item.namaLayanan = "Jasmine Premium";
+                item.hargaPerUnit = 5000;
                 break;
 
             default:
@@ -2386,1159 +2291,698 @@ PesananItem Customer::prosesParfumLaundry(int pilihan)
                 return item;
         }
 
-        cout << "\nSoftener yang dipilih : "
-            << item.namaItem << endl;
+        cout << "\nParfum yang dipilih : " << item.namaItem << endl;
 
+        // jumlah yang dimasukkan customer
         item.beratAtauJumlah = item.jumlahBahan;
 
-        item.subTotalHarga =
-            item.beratAtauJumlah * item.hargaPerUnit;
-
-        item.estimasiSelesai = "Mengikuti estimasi laundry";
+        // harga
+        item.subTotalHarga = item.jumlahBahan * item.hargaPerUnit;
 
         return item;
     }
 
-void Customer::loadPromo() {
-    ifstream file("promo.txt");
-    jumlahPromo = 0;
-    string line;
-    
-    while (getline(file, line)) {
-        stringstream ss(line);
-        string nama, diskonStr, tanggal;
-
-        getline(ss, nama, '|');
-        getline(ss, diskonStr, '|');
-        getline(ss, tanggal, '|');
-
-        float diskon;
-        stringstream convert(diskonStr);
-        convert >> diskon;
-
-        daftarPromo[jumlahPromo].namaPromo = nama;
-        daftarPromo[jumlahPromo].diskon = diskon;
-        daftarPromo[jumlahPromo].masaBerlaku = tanggal;
-
-        jumlahPromo++;
-    }
-    
-    file.close();
-}
-
-
-
-void Customer::checkPromo() {
-    loadPromo();
-    string tanggal = getTanggalSekarang();
-    int nomorPromo = 1;
-    bool adaPromo = false;
-    totalSetelahPromo = totalBiaya;
-    int i;
-    for (i = 0; i < jumlahPromo; ++i) {
-        if (tanggal <= daftarPromo[i].masaBerlaku && totalSetelahPromo <= totalBiaya) {
-            adaPromo = true;
-            if (nomorPromo == 1) cout << "PROMO!" << endl;
-            cout << nomorPromo << ". " << daftarPromo[i].namaPromo << endl;
-            double diskon = daftarPromo[i].diskon;
-            double diskonRP = (diskon / 100) * totalBiaya;
-            cout << "   Diskon: " << diskon << "%" << " : Rp " << diskonRP << endl;
-            cout << "   Berlaku sampai: " << daftarPromo[i].masaBerlaku << endl;
-            cout << string(30, '-') << endl;
-            nomorPromo++;
-            totalSetelahPromo -= diskonRP;
-        }
-    }
-    if (!adaPromo) {
-        totalSetelahPromo = 0;
-        return;
-    } else {
-    	TOTAL = totalSetelahPromo;
-	}
-}
-
-// Struk transaksi
-// Struk transaksi
-void Customer::tampilkanStruk(const string& metodePembayaran, const string& kodeTransaksi) {
-    cout << "\n" << string(50, '=') << endl;
-    cout << "                 STRUK PEMBAYARAN" << endl;
-    cout << "                 LAUNDRY AMBA" << endl;
-    cout << string(50, '=') << endl;
-    cout << "Kode Transaksi : " << kodeTransaksi << endl;
-    cout << "Tanggal        : " << getTanggalSekarang() << endl;
-    cout << "Kasir          : Admin" << endl;
-    cout << string(50, '-') << endl;
-    cout << "Data Pelanggan:" << endl;
-    cout << "Nama           : " << user[indeksAktif].nama << endl;
-    cout << "Telepon        : " << user[indeksAktif].noTelepon << endl;
-    cout << "Alamat         : " << user[indeksAktif].alamat << endl;
-    cout << string(50, '-') << endl;
-    cout << "Detail Pesanan:" << endl;
-    totalBiaya = 0.0;
-    
-    for (int i = 0; i < jumlahKeranjang; ++i) {
-        const PesananItem& item = keranjangLayanan[i];
-        cout << (i + 1) << ". " << item.namaLayanan << endl;
-        cout << "   " << item.namaItem << endl;
-        cout << "   " << fixed << setprecision(1) << item.beratAtauJumlah 
-             << " " << item.unitSatuan << " x Rp " << fixed << setprecision(0) 
-             << item.hargaPerUnit << " = Rp " << item.subTotalHarga << endl;
-        cout << "   Estimasi: " << item.estimasiSelesai << endl;
-        totalBiaya += item.subTotalHarga;
-    }
-    
-    cout << "\nTOTAL KESELURUHAN: Rp " << totalBiaya << endl;
-    potonganPoin = 0;
-    totalSetelahPromo = 0;
-    TOTAL = totalBiaya;
-    
-    checkPromo();
-    
-    if (totalSetelahPromo != totalBiaya) {
-        TOTAL = totalSetelahPromo;
-    }
-    
-    if (totalSetelahPromo > 0) {
-        cout << "\nTOTAL KESELURUHAN SETELAH PROMO: Rp " << fixed << setprecision(0) << TOTAL << endl;
-    }
-    
-    // ========== ?? KODE TAMBAHAN DILETAKKAN DI SINI ?? ==========
-
-    
-    // Tambahkan ke jadwal pengambilan
-    for (int i = 0; i < jumlahKeranjang; i++) {
-        manajemenJadwal.tambahJadwalPengambilan(kodeTransaksi, keranjangLayanan[i].estimasiSelesai);
-    }
-    
-    // ========== ?? SAMPAI DI SINI ?? ==========
-    cout << "Metode Pembayaran: " << metodePembayaran << endl;
-    cout << string(50, '=') << endl;
-    
-    user[indeksAktif].poin += (int)(totalBiaya / 100);
-    cout << "Anda telah memperoleh " << (totalBiaya / 100) << " Poin!" << endl;
-        
-    char pil;
-    cout << "Total Poin sekarang: " << user[indeksAktif].poin << endl << endl;
-    cout << "Apakah ingin menggunakan poin untuk memotong total biaya? (y/n): ";
-    cin >> pil;
-    
-    if (pil == 'Y' || pil == 'y') {
-        while (true) {
-            cout << "Masukkan jumlah poin (1 poin = Rp. 1): ";
-            cin >> potonganPoin;
-            if (potonganPoin > totalBiaya) {
-                cout << "Poin yang digunakan lebih banyak dari total biaya!" << endl << endl;
-            } else if (potonganPoin < 0 || potonganPoin > user[indeksAktif].poin) {
-                cout << "Poin anda tidak mencukupi atau tidak valid!" << endl << endl;
-            } else {
-                break;
-            }
-        }
-        cout << "Anda menggunakan " << potonganPoin << " poin." << endl;
-        user[indeksAktif].poin -= (int)potonganPoin;
-
-        totalBiaya -= potonganPoin;
-        cout << "\nTOTAL KESELURUHAN SEKARANG: Rp " << fixed << setprecision(0) << totalBiaya << endl;
-        cout << "Total Poin sekarang: " << user[indeksAktif].poin << endl << endl;
-    }
-    
-    saveUsers();
-}
-
-// Simpan struk transaksi ke file.txt
-void Customer::simpanRiwayatTransaksi(const string& metodePembayaran, const string& kodeTransaksi) {
-    ofstream file("riwayat_transaksi.txt", ios::app);
-    if (!file.is_open()) {
-        cout << "Gagal membuka file untuk menyimpan riwayat transaksi!" << endl;
-        return;
-    }
-    file << "=========================\n";
-    file << "Kode Transaksi : " << kodeTransaksi << "\n";
-    file << "Tanggal        : " << getTanggalSekarang() <<"\n";
-    file << "Nama Pelanggan : " << user[indeksAktif].nama << "\n";
-    file << "Telepon        : " << user[indeksAktif].noTelepon << "\n";
-    file << "Alamat         : " << user[indeksAktif].alamat << "\n";
-    file << "Metode Bayar   : " << metodePembayaran << "\n";
-    file << "Status         : Diterima" << "\n";
-    file << "-------------------------\n";
-    double total = 0.0;
-    int i;
-    for (i = 0; i < jumlahKeranjang; ++i) {
-        const PesananItem& item = keranjangLayanan[i];
-        file << "- " << item.kategoriLayanan << " | " << item.namaLayanan << " | "
-             << item.namaItem << " | " << fixed << setprecision(1) << item.beratAtauJumlah << " "
-             << item.unitSatuan << " x Rp" << fixed << setprecision(0) << item.hargaPerUnit
-             << " = Rp" << item.subTotalHarga << "\n";
-        total += item.subTotalHarga;
-    }
-    if (potonganPoin > 0 || totalSetelahPromo > 0) {
-        file << "SUBTOTAL.: Rp" << fixed << setprecision(0) << total << "\n";
-        if (potonganPoin > 0) {
-            file << "Potongan poin: Rp" << potonganPoin << "\n";
-            total -= potonganPoin;
-        }
-        if (totalSetelahPromo > 0) {
-            file << "Promo: Rp" << totalBiaya - totalSetelahPromo << "\n";
-            total -= totalBiaya - totalSetelahPromo;
-        }
-    }
-    file << "\nTOTAL: Rp" << fixed << setprecision(0) << total << "\n";
-    file << "=========================\n\n";
-    file.close();
-    cout << "Riwayat transaksi berhasil disimpan.\n";
-}
-
-void Admin::tampilkanDashboard() {
-    string today = getTanggalSekarang();
-
-    double totalPendapatanHariIni = 0;
-    int totalPesananHariIni = 0;
-    int laundryDiproses = 0;
-    int laundrySelesai = 0;
-
-    string customerHariIni[100];
-    int jumlahCustomerHariIni = 0;
-
-    loadRiwayatTransaksi();
-
-    for (int i = 0; i < jumlahData; i++) {
-
-        if (riwayat[i].tanggalLengkap == today) {
-
-            totalPesananHariIni++;
-
-            bool customerSudahAda = false;
-
-            for (int j = 0; j < jumlahCustomerHariIni; j++) {
-                if (customerHariIni[j] == riwayat[i].nama) {
-                    customerSudahAda = true;
-                    break;
-                }
-            }
-
-            if (!customerSudahAda && jumlahCustomerHariIni < 100) {
-                customerHariIni[jumlahCustomerHariIni++] = riwayat[i].nama;
-            }
-
-            if (riwayat[i].status == "Selesai") {
-
-                laundrySelesai++;
-
-                string detailTransaksi = riwayat[i].detailTransaksi;
-
-                size_t posTotal = detailTransaksi.rfind("TOTAL: Rp");
-
-                if (posTotal != string::npos) {
-
-                    string totalStr = detailTransaksi.substr(posTotal + 9);
-
-                    double total = atof(totalStr.c_str());
-
-                    totalPendapatanHariIni += total;
-                }
-
-            } else {
-
-                laundryDiproses++;
-
-            }
-
-        }
-
-    }
-
-    cout << endl;
-    cout << setw(38) << "                      DASHBOARD ADMIN" << endl;
-    garisAtas();
-
-    cout << left;
-    cout << setw(25) << " Hari / Tanggal"      << ": " << today << endl;
-
-    garisTengah();
-
-    cout << setw(25) << " Customer Hari Ini"   << ": " << jumlahCustomerHariIni << endl;
-    cout << setw(25) << " Laundry Masuk"       << ": " << totalPesananHariIni << endl;
-    cout << setw(25) << " Laundry Diproses"    << ": " << laundryDiproses << endl;
-    cout << setw(25) << " Laundry Selesai"     << ": " << laundrySelesai << endl;
-
-    garisTengah();
-
-    cout << setw(25) << " Pendapatan Hari Ini" << ": Rp "
-         << fixed << setprecision(0) << totalPendapatanHariIni << endl;
-
-    cout << setw(25) << " Pengeluaran Hari Ini"
-         << ": Rp "
-         << fixed << setprecision(0)
-         << pengeluaran.totalPengeluaranHariIni()
-         << endl;
-
-    garisBawah();
-}
-
-
-double Admin::hitungPendapatanHariIni()
-{
-    string today = getTanggalSekarang();
-    double totalPendapatanHariIni = 0;
-
-    loadRiwayatTransaksi();
-
-    for (int i = 0; i < jumlahData; i++)
-    {
-        if (riwayat[i].tanggalLengkap == today &&
-            riwayat[i].status == "Selesai")
+        void Customer::tampilkanSoftener()
         {
-            string detail = riwayat[i].detailTransaksi;
+            cout << "\n";
+            cout << string(45,'=') << endl;
+            cout << "          SOFTENER BUNGA" << endl;
+            cout << string(45,'=') << endl;
 
-            size_t pos = detail.rfind("TOTAL: Rp");
+            cout << "1. Mawar             Rp2.000 / 10 ml" << endl;
+            cout << "2. Melati            Rp2.000 / 10 ml" << endl;
+            cout << "3. Lavender          Rp2.000 / 10 ml" << endl;
+            cout << "4. Sakura            Rp3.000 / 10 ml" << endl;
+            cout << "5. Anggrek           Rp3.000 / 10 ml" << endl;
+            cout << "6. Lily              Rp3.000 / 10 ml" << endl;
+            cout << "7. Edelweiss         Rp4.000 / 10 ml" << endl;
+            cout << "8. Magnolia          Rp4.000 / 10 ml" << endl;
+            cout << "0. Kembali" << endl;
+            cout << string(45,'=') << endl;
+        }
 
-            if (pos != string::npos)
+        PesananItem Customer::prosesSoftener(int pilihan)
+        {
+            PesananItem item;
+
+            item.kategoriLayanan = "Softener";
+            item.unitSatuan = "10 ml";
+
+            cout << "\nJumlah Softener (1 = 10 ml) : ";
+            cin >> item.jumlahBahan;
+
+            switch(pilihan)
             {
-                string angka = detail.substr(pos + 9);
-
-                totalPendapatanHariIni += atof(angka.c_str());
-            }
-        }
-    }
-
-    return totalPendapatanHariIni;
-}
-
-void Admin::dashboardKeuangan()
-{
-    double pendapatan = hitungPendapatanHariIni();
-
-    double pengeluaranHariIni =
-        pengeluaran.totalPengeluaranHariIni();
-
-    double laba = pendapatan - pengeluaranHariIni;
-
-    cout << "\n=============================================\n";
-    cout << "          DASHBOARD KEUANGAN\n";
-    cout << "=============================================\n";
-
-    cout << "Pendapatan Hari Ini  : Rp "
-         << fixed << setprecision(0)
-         << pendapatan << endl;
-
-    cout << "Pengeluaran Hari Ini : Rp "
-         << pengeluaranHariIni << endl;
-
-    cout << "---------------------------------------------\n";
-
-    cout << "LABA HARI INI        : Rp "
-         << laba << endl;
-
-    cout << "=============================================\n";
-
-}
-
-void Customer::loadRiwayatTransaksi() {
-    ifstream file("riwayat_transaksi.txt");
-    if (!file.is_open()) {
-        jumlahData = 0;
-        return;
-    }
-    string baris;
-    int indeks = 0;
-    bool sedangMembacaTransaksi = false;
-    string detailLengkap = "";
-    while (getline(file, baris) && indeks < MAX_RIWAYAT) {
-        if (sedangMembacaTransaksi) {
-            detailLengkap += baris + "\n";
-        }
-        if (baris.find("Kode Transaksi : ") == 0) {
-            riwayat[indeks].kode = baris.substr(17);
-            sedangMembacaTransaksi = true;
-            detailLengkap = baris + "\n";
-        } else if (baris.find("Tanggal        : ") == 0) {
-            string stringTanggal = baris.substr(17);
-            riwayat[indeks].tanggalLengkap = stringTanggal;
-        } else if (baris.find("Nama Pelanggan : ") == 0) {
-            riwayat[indeks].nama = baris.substr(17);
-        } else if (baris.find("Telepon        : ") == 0) {
-            riwayat[indeks].telepon = baris.substr(17);
-        } else if (baris.find("Alamat         : ") == 0) {
-            riwayat[indeks].alamat = baris.substr(17);
-        } else if (baris.find("Metode Bayar   : ") == 0) {
-            riwayat[indeks].metode = baris.substr(17);
-        } else if (baris.find("Status         : ") == 0) {
-            riwayat[indeks].status = baris.substr(17);
-        } else if (baris == "=========================") {
-            if (sedangMembacaTransaksi) {
-                riwayat[indeks].detailTransaksi = detailLengkap;
-                indeks++;
-                sedangMembacaTransaksi = false;
-                detailLengkap = "";
-            }
-        }
-    }
-    jumlahData = indeks;
-    file.close();
-}
-
-void Admin::loadRiwayatTransaksi() {
-    ifstream file("riwayat_transaksi.txt");
-    if (!file.is_open()) {
-        jumlahData = 0;
-        return;
-    }
-    string baris;
-    int indeks = 0;
-    bool sedangMembacaTransaksi = false;
-    string detailLengkap = "";
-    while (getline(file, baris) && indeks < MAX_RIWAYAT) {
-        if (sedangMembacaTransaksi) {
-            detailLengkap += baris + "\n";
-        }
-        if (baris.find("Kode Transaksi : ") == 0) {
-            riwayat[indeks].kode = baris.substr(17);
-            sedangMembacaTransaksi = true;
-            detailLengkap = baris + "\n";
-        } else if (baris.find("Tanggal        : ") == 0) {
-            string stringTanggal = baris.substr(17);
-            riwayat[indeks].tanggalLengkap = stringTanggal;
-        } else if (baris.find("Nama Pelanggan : ") == 0) {
-            riwayat[indeks].nama = baris.substr(17);
-        } else if (baris.find("Telepon        : ") == 0) {
-            riwayat[indeks].telepon = baris.substr(17);
-        } else if (baris.find("Alamat         : ") == 0) {
-            riwayat[indeks].alamat = baris.substr(17);
-        } else if (baris.find("Metode Bayar   : ") == 0) {
-            riwayat[indeks].metode = baris.substr(17);
-        } else if (baris.find("Status         : ") == 0) {
-            riwayat[indeks].status = baris.substr(17);
-        } else if (baris == "=========================") {
-            if (sedangMembacaTransaksi) {
-                riwayat[indeks].detailTransaksi = detailLengkap;
-                indeks++;
-                sedangMembacaTransaksi = false;
-                detailLengkap = "";
-            }
-        }
-    }
-    jumlahData = indeks;
-    file.close();
-}
-
-void Admin::lihatUserAdmin() {
-    ifstream file("users.txt");
-    if (!file.is_open()) {
-        cerr << "Gagal membuka file users.txt\n";
-        return;
-    }
-    cout << "\n" << string(40, '-') << endl;
-    cout << left << setw(10) << "" << "DAFTAR AKUN ADMIN";
-    cout << "\n" << string(40, '-') << endl;
-    string baris, usernameSekarang = "";
-    int jumlahAdmin = 0;
-    bool adalahAdmin = false, sudahAdaUsername = false;
-    while(getline(file, baris)) {
-        if (baris.empty()) continue;
-        if (baris == "=========================") {
-            if (adalahAdmin && sudahAdaUsername && !usernameSekarang.empty()) {
-                jumlahAdmin++;
-                cout << jumlahAdmin << ". " << usernameSekarang << endl;
-            }
-            usernameSekarang = "";
-            adalahAdmin = false;
-            sudahAdaUsername = false;
-            continue;
-        }
-        if (baris.find("Username   : ") != string::npos) {
-            usernameSekarang = baris.substr(13);
-            sudahAdaUsername = true;
-        }
-        if (baris.find("Role       : admin") != string::npos) {
-            adalahAdmin = true;
-        }
-    }
-    if (adalahAdmin && sudahAdaUsername && !usernameSekarang.empty()) {
-        jumlahAdmin++;
-        cout << jumlahAdmin << ". " << usernameSekarang << endl;
-    }
-    cout << "\nTotal akun admin: " << jumlahAdmin << endl;
-    if (jumlahAdmin == 0) {
-        cout << "Tidak ada data admin yang ditemukan." << endl;
-    }
-    file.close();
-}
-
-void Admin::lihatUserPengguna() {
-    ifstream file("users.txt");
-    if (!file.is_open()) {
-        cerr << "Gagal membuka file users.txt\n";
-        return;
-    }
-    cout << "\n" << string(40, '-') << endl;
-    cout << left << setw(10) << "" << "DAFTAR  AKUN CUSTOMER";
-    cout << "\n" << string(40, '-') << endl;
-    string baris;
-    int jumlahCustomer = 0;
-    string dataUser[10];
-    int idx = 0;
-    bool adalahCustomer = false;
-    while(getline(file, baris)) {
-        if (baris.empty()) continue;
-        if (baris == "=========================") {
-            if (adalahCustomer && idx > 0) {
-                cout << "=========================" << endl;
-                for (int i = 0; i < idx; ++i) {
-                    if (dataUser[i].find("Password   : ") == string::npos) {
-                        cout << dataUser[i] << endl;
-                    }
-                }
-                cout << "=========================" << endl;
-                jumlahCustomer++;
-            }
-            idx = 0;
-            adalahCustomer = false;
-            continue;
-        }
-        dataUser[idx++] = baris;
-        if (baris.find("Role       : customer") != string::npos) {
-            adalahCustomer = true;
-        }
-    }
-    if (adalahCustomer && idx > 0) {
-        cout << "=========================" << endl;
-        for (int i = 0; i < idx; ++i) {
-            if (dataUser[i].find("Password   : ") == string::npos) {
-                cout << dataUser[i] << endl;
-            }
-        }
-        cout << "=========================" << endl;
-        jumlahCustomer++;
-    }
-    cout << "\nTotal akun customer: " << jumlahCustomer << endl;
-    if (jumlahCustomer == 0) {
-        cout << "Tidak ada data customer yang ditemukan." << endl;
-    }
-    file.close();
-}
-
-void Admin::dataUser() {
-    while (true) {
-        cout << "\n" << string(40, '-') << endl;
-        cout << left << setw(10) << "" << "MENU DATA USER";
-        cout << "\n" << string(40, '-') << endl;
-        cout << "1. Lihat Data Admin" << endl;
-        cout << "2. Lihat Data Customer" << endl;
-        cout << "0. Kembali ke Menu Utama" << endl << endl;
-        int pilihan;
-        cout << "Pilihan: ";
-        cin >> pilihan;
-        cout << endl;
-        switch(pilihan) {
-            case 1: lihatUserAdmin(); break;
-            case 2: lihatUserPengguna(); break;
-            case 0: 
-				return;
-            default: 
-				cout << "Pilihan tidak valid!" << endl; 
-        }
-    }
-}
-
-void Admin::tampilkanHasilPencarian(bool ditemukan[], const string& jenisPencarian) {
-    bool adaHasil = false;
-    cout << "\nHasil pencarian " << jenisPencarian << ":\n";
-    for (int i = 0; i < jumlahData; i++) {
-        if (ditemukan[i]) {
-            adaHasil = true;
-            cout << riwayat[i].detailTransaksi << endl;
-        }
-    }
-    if (!adaHasil) {
-        cout << "Data tidak ditemukan.\n";
-    }
-}
-
-void Admin::cariByTanggal() {
-    loadRiwayatTransaksi();
-    bool ditemukan[MAX_RIWAYAT] = {0};
-    int inputTanggal, inputBulan, inputTahun;
-    cout << "=== PENCARIAN BERDASARKAN TANGGAL ===" << endl;
-    do {
-        cout << "Masukkan tanggal (1-31): ";
-        cin >> inputTanggal;
-        if (inputTanggal < 1 || inputTanggal > 31) {
-            cout << "Input tidak valid! Masukkan angka 1-31." << endl;
-        }
-    } while (inputTanggal < 1 || inputTanggal > 31);
-    do {
-        cout << "Masukkan bulan (1-12): ";
-        cin >> inputBulan;
-        if (inputBulan < 1 || inputBulan > 12) {
-            cout << "Input tidak valid! Masukkan angka 1-12." << endl;
-        }
-    } while (inputBulan < 1 || inputBulan > 12);
-    cout << "Masukkan tahun (contoh: 2025): ";
-    cin >> inputTahun;
-    stringstream ss;
-    ss << inputTahun << "-";
-    if (inputBulan < 10) ss << "0";
-    ss << inputBulan << "-";
-    if (inputTanggal < 10) ss << "0";
-    ss << inputTanggal;
-    string tanggalDicari = ss.str();
-    for (int i = 0; i < jumlahData; i++) {
-        string detailTransaksi = riwayat[i].detailTransaksi;
-        size_t posTanggal = detailTransaksi.find("Tanggal        : ");
-        if (posTanggal != string::npos) {
-            size_t posAwal = posTanggal + 17;
-            size_t posAkhir = detailTransaksi.find("\n", posAwal);
-            if (posAkhir != string::npos) {
-                string tanggalRiwayat = detailTransaksi.substr(posAwal, posAkhir - posAwal);
-                if (tanggalRiwayat == tanggalDicari) {
-                    ditemukan[i] = true;
-                }
-            }
-        }
-    }
-    string kriteria = "berdasarkan tanggal " + tanggalDicari;
-    tampilkanHasilPencarian(ditemukan, kriteria);
-}
-
-void Admin::cariByNama() {
-    loadRiwayatTransaksi();
-    bool ditemukan[MAX_RIWAYAT] = {0};
-    string nama;
-    cout << "Masukkan nama pelanggan: ";
-    cin.ignore();
-    getline(cin, nama);
-	nama = toLowerCase(nama);
-    for (int i = 0; i < jumlahData; i++) {
-        string namaRiwayat = riwayat[i].nama;
-		namaRiwayat = toLowerCase(namaRiwayat);
-        if (namaRiwayat.find(nama) != string::npos) {
-            ditemukan[i] = true;
-        }
-    }
-    tampilkanHasilPencarian(ditemukan, "berdasarkan nama");
-}
-
-void Admin::cariByKodeTransaksi() {
-    loadRiwayatTransaksi();
-    bool ditemukan[MAX_RIWAYAT] = {0};
-    string kode;
-    cout << "Masukkan kode transaksi : ";
-    cin >> kode;
-    kode = toUpperCase(kode);
-    for (int i = 0; i < jumlahData; i++) {
-        string kodeRiwayat = riwayat[i].kode;
-        kodeRiwayat = toUpperCase(kodeRiwayat);
-        if (kodeRiwayat.find(kode) != string::npos) {
-            ditemukan[i] = true;
-        }
-    }
-    tampilkanHasilPencarian(ditemukan, "berdasarkan kode transaksi");
-}
-
-void Admin::cariByStatus() {
-    loadRiwayatTransaksi();
-    bool ditemukan[MAX_RIWAYAT] = {0};
-    cout << "\n--- PENCARIAN BERDASARKAN STATUS ---" << endl;
-    cout << "1. Status Selesai" << endl;
-    cout << "2. Status Belum Selesai" << endl;
-    cout << "0. Kembali" << endl << endl;
-    int pilihan;
-    cout << "Pilihan: ";
-    cin >> pilihan;
-    cout << endl;
-    string kriteria;
-    switch(pilihan) {
-        case 1:
-            for (int i = 0; i < jumlahData; i++) {
-                if (riwayat[i].status == "Selesai") ditemukan[i] = true;
-            }
-            kriteria = "dengan status Selesai";
-            break;
-        case 2:
-            for (int i = 0; i < jumlahData; i++) {
-                if (riwayat[i].status != "Selesai") ditemukan[i] = true;
-            }
-            kriteria = "dengan status Belum Selesai";
-            break;
-        case 0: return;
-        default: cout << "Pilihan tidak valid!" << endl; return;
-    }
-    tampilkanHasilPencarian(ditemukan, kriteria);
-}
-
-// Fungsi cari riwayat transaksi (linear search)
-/*void Admin::cariRiwayatTransaksiLinear(const string& keyword) {
-	loadRiwayatTransaksi();
-    bool ditemukan = false;
-    for (int i = 0; i < jumlahData; ++i) {
-        if (riwayat[i].kode == keyword) {
-            ditemukan = true;
-            cout << "\n--- RIWAYAT DITEMUKAN ---" << endl;
-            cout << riwayat[i].detailTransaksi << endl;
-        }
-    }
-    if (!ditemukan) {
-        cout << "Tidak ada riwayat transaksi yang cocok dengan kata kunci " << keyword << endl << endl;
-    }
-}*/
-
-// Fungsi cari data user (linear search)
-void Admin::cariUserLinear(const string& keyword) {
-    bool ditemukan = false;
-    for (int i = 0; i < jumlahPengguna; ++i) {
-        if (user[i].username == keyword) {
-            ditemukan = true;
-            cout << "\n--- USER DITEMUKAN ---" << endl;
-            cout << "Nama       : " << user[i].nama << endl;
-            cout << "Username   : " << user[i].username << endl;
-            cout << "Role       : " << user[i].role << endl;
-            cout << "Alamat     : " << user[i].alamat << endl;
-            cout << "No.Telepon : " << user[i].noTelepon << endl;
-            cout << "Poin       : " << user[i].poin << endl;
-            cout << "----------------------" << endl;
-        }
-    }
-    if (!ditemukan) {
-        cout << "Tidak ada user yang cocok dengan kata kunci "<< keyword << endl << endl;
-    }
-}
-
-void Admin::menuCariRiwayat() {
-    while (true) {
-        cout << "\n" << string(40, '-') << endl;
-        cout << left << setw(9) << "" << "MENU PENCARIAN RIWAYAT";
-        cout << "\n" << string(40, '-') << endl;
-        cout << "1. Cari berdasarkan Tanggal Lengkap (Tanggal-Bulan-Tahun)" << endl;
-        cout << "2. Cari berdasarkan Nama Pelanggan" << endl;
-        cout << "3. Cari berdasarkan Kode Transaksi" << endl;
-        cout << "4. Cari berdasarkan Status" << endl;
-        cout << "0. Kembali" << endl << endl;
-        int pilihan;
-        cout << "Pilihan: ";
-        cin >> pilihan;
-        cout << endl;
-        switch(pilihan) {
-            case 1: cariByTanggal(); break;
-            case 2: cariByNama(); break;
-            case 3:   {
-            	string keyword;
-				cout << "Masukkan kode transaksi : ";
-				cin.ignore();
-				getline(cin, keyword);
-	            tampilkanHasilBinaryKode(keyword);
-				break;
-			}
-            case 4: cariByStatus(); break;
-            case 0: return;
-            default: cout << "Pilihan tidak valid!" << endl;
-        }
-    }
-}
-
-// Sortir Riwayat Transaksi Berdasarkan Tanggal 
-void Admin::sortRiwayatByTanggalTerbaru() {
-    for (int i = 1; i < jumlahData; ++i) {
-        Riwayat temp = riwayat[i];
-        int j = i - 1;
-        while (j >= 0 && riwayat[j].tanggalLengkap < temp.tanggalLengkap) {
-            riwayat[j + 1] = riwayat[j];
-            --j;
-        }
-        riwayat[j + 1] = temp;
-    }
-}
-
-void Admin::bacaRiwayatLayanan() {
-    sortRiwayatByTanggalTerbaru();
-    if (jumlahData == 0) {
-        cout << "Tidak ada riwayat transaksi yang tersedia." << endl;
-        return;
-    }
-    for (int i = 0; i < jumlahData; ++i) {
-        cout << riwayat[i].detailTransaksi << endl;
-    }
-}
-
-void Admin::updateStatus() {
-    loadRiwayatTransaksi();
-    if (jumlahData == 0) {
-        cout << "Tidak ada data transaksi yang tersedia." << endl;
-        return;
-    }
-    string kodeTransaksi;
-    cout << "\n=== UPDATE STATUS LAUNDRY ===" << endl;
-    cout << "Masukkan kode transaksi: ";
-    cin >> kodeTransaksi;
-    kodeTransaksi = toUpperCase(kodeTransaksi);
-    int indeksDitemukan = -1;
-    for (int i = 0; i < jumlahData; i++) {
-        string kodeRiwayat = riwayat[i].kode;
-        kodeRiwayat = toUpperCase(kodeRiwayat);
-        if (kodeRiwayat == kodeTransaksi) {
-            indeksDitemukan = i;
-            break;
-        }
-    }
-    if (indeksDitemukan == -1) {
-        cout << "Transaksi dengan kode " << kodeTransaksi << " tidak ditemukan!" << endl;
-        return;
-    }
-    cout << "\nData transaksi ditemukan:" << endl;
-    cout << "Kode Transaksi: " << riwayat[indeksDitemukan].kode << endl;
-    cout << "Nama Pelanggan: " << riwayat[indeksDitemukan].nama << endl;
-    cout << "Status Saat Ini: " << riwayat[indeksDitemukan].status << endl;
-    cout << "\nPilih status baru:" << endl;
-    cout << "1. Dicuci" << endl;
-    cout << "2. Disetrika" << endl;
-    cout << "3. Siap Ambil" << endl;
-    cout << "4. Diantar" << endl;
-    cout << "5. Selesai" << endl;
-    cout << "0. Batal Update" << endl;
-    int pilihanStatus;
-    cout << "Pilihan: ";
-    cin >> pilihanStatus;
-    string statusBaru;
-    switch(pilihanStatus) {
-        case 1: statusBaru = "Dicuci"; break;
-        case 2: statusBaru = "Disetrika"; break;
-        case 3: statusBaru = "Siap Ambil"; break;
-        case 4: statusBaru = "Diantar"; break;
-        case 5: statusBaru = "Selesai"; break;
-        case 0: cout << "Update status dibatalkan." << endl; return;
-        default: cout << "Pilihan tidak valid!" << endl; return;
-    }
-    cout << "\nApakah Anda yakin ingin mengubah status dari '"
-         << riwayat[indeksDitemukan].status << "' menjadi '" << statusBaru << "'? (y/n): ";
-    char konfirmasi;
-    cin >> konfirmasi;
-    if (konfirmasi == 'y' || konfirmasi == 'Y') {
-        riwayat[indeksDitemukan].status = statusBaru;
-        string detailLama = riwayat[indeksDitemukan].detailTransaksi;
-        size_t posStatus = detailLama.find("Status         : ");
-        if (posStatus != string::npos) {
-            size_t posAkhirBaris = detailLama.find("\n", posStatus);
-            if (posAkhirBaris != string::npos) {
-                string barisStatusBaru = "Status         : " + statusBaru;
-                riwayat[indeksDitemukan].detailTransaksi =
-                    detailLama.substr(0, posStatus) + barisStatusBaru +
-                    detailLama.substr(posAkhirBaris);
-            }
-        }
-        simpanRiwayatKeFile();
-        cout << "Status berhasil diperbarui menjadi: " << statusBaru << endl;
-    } else {
-        cout << "Update status dibatalkan." << endl;
-    }
-}
-
-void Admin::simpanRiwayatKeFile() {
-    ofstream file("riwayat_transaksi.txt");
-    if (!file.is_open()) {
-        cerr << "Gagal membuka file untuk penulisan!" << endl;
-        return;
-    }
-    for (int i = 0; i < jumlahData; i++) {
-        file << riwayat[i].detailTransaksi;
-        if (i < jumlahData - 1) {
-            file << endl;
-        }
-    }
-    file.close();
-}
-
-void Admin::buatPromo() {
-    string namaPromo, masaBerlaku;
-    float diskon;
-    
-    cout << "\n=== BUAT PROMO BARU ===" << endl;
-    
-    cout << "Masukkan nama promo: ";
-    cin.ignore(); 
-    getline(cin, namaPromo);
-    
-    do {
-        cout << "Masukkan besaran diskon (0.1-100): ";
-        cin >> diskon;
-        
-        if (diskon < 0.1 || diskon > 100) {
-            cout << "Input tidak valid! Masukkan angka 0.1-100." << endl;
-        }
-    } while (diskon < 0.1 || diskon > 100);
-    
-    do {
-        cout << "Masukkan masa berlaku (yyyy-mm-dd): ";
-        cin >> masaBerlaku;
-        
-        if (masaBerlaku.length() != 10 || masaBerlaku[4] != '-' || masaBerlaku[7] != '-') {
-            cout << "Format tidak valid! Gunakan format yyyy-mm-dd (contoh: 2025-01-31)" << endl;
-        } else {
-            bool formatValid = true;
-            for (int i = 0; i < 10; i++) {
-                if (i == 4 || i == 7) continue; 
-                if (!isdigit(masaBerlaku[i])) {
-                    formatValid = false;
+                case 1:
+                    item.namaItem = "Mawar";
+                    item.namaLayanan = "Softener Mawar";
+                    item.hargaPerUnit = 2000;
                     break;
-                }
-            }
-            
-            if (!formatValid) {
-                cout << "Format tidak valid! Gunakan format yyyy-mm-dd dengan angka yang benar" << endl;
-            } else {
-                string bulanStr = masaBerlaku.substr(5, 2);
-                string tanggalStr = masaBerlaku.substr(8, 2);
-                int bulan = atoi(bulanStr.c_str());
-                int tanggal = atoi(tanggalStr.c_str());
-                
-                if (bulan < 1 || bulan > 12 || tanggal < 1 || tanggal > 31) {
-                    cout << "Tanggal atau bulan tidak valid!" << endl;
-                } else {
-                    break; 
-                }
-            }
-        }
-    } while (true);
-    
-    cout << "\n=== KONFIRMASI PROMO ===" << endl;
-    cout << "Nama Promo   : " << namaPromo << endl;
-    cout << "Diskon       : " << diskon << "%" << endl;
-    cout << "Masa Berlaku : " << masaBerlaku << endl;
-    cout << "\nApakah data promo sudah benar? (y/n): ";
-    
-    char konfirmasi;
-    cin >> konfirmasi;
-    
-    if (konfirmasi == 'y' || konfirmasi == 'Y') {
-        ofstream file("promo.txt", ios::app);
-        if (!file.is_open()) {
-            cout << "Gagal membuka file promo.txt!" << endl;
-            return;
-        }
-        
-        file << namaPromo << "|" << diskon << "|" << masaBerlaku << endl;
-        file.close();
-        
-        cout << "Promo berhasil dibuat dan disimpan!" << endl;
-    } else {
-        cout << "Pembuatan promo dibatalkan." << endl;
-    }
-}
 
-void Admin::lihatPromo() {
-    ifstream file("promo.txt");
-    if (!file.is_open()) {
-        cout << "Tidak ada file promo atau gagal membuka file!" << endl;
-        return;
+                case 2:
+                    item.namaItem = "Melati";
+                    item.namaLayanan = "Softener Melati";
+                    item.hargaPerUnit = 2000;
+                    break;
+
+                case 3:
+                    item.namaItem = "Lavender";
+                    item.namaLayanan = "Softener Lavender";
+                    item.hargaPerUnit = 2000;
+                    break;
+
+                case 4:
+                    item.namaItem = "Sakura";
+                    item.namaLayanan = "Softener Sakura";
+                    item.hargaPerUnit = 3000;
+                    break;
+
+                case 5:
+                    item.namaItem = "Anggrek";
+                    item.namaLayanan = "Softener Anggrek";
+                    item.hargaPerUnit = 3000;
+                    break;
+
+                case 6:
+                    item.namaItem = "Lily";
+                    item.namaLayanan = "Softener Lily";
+                    item.hargaPerUnit = 3000;
+                    break;
+
+                case 7:
+                    item.namaItem = "Edelweiss";
+                    item.namaLayanan = "Softener Edelweiss";
+                    item.hargaPerUnit = 4000;
+                    break;
+
+                case 8:
+                    item.namaItem = "Magnolia";
+                    item.namaLayanan = "Softener Magnolia";
+                    item.hargaPerUnit = 4000;
+                    break;
+
+                default:
+                    item.namaLayanan = "";
+                    return item;
+            }
+
+            cout << "\nSoftener yang dipilih : "
+                << item.namaItem << endl;
+
+            item.beratAtauJumlah = item.jumlahBahan;
+
+            item.subTotalHarga =
+                item.beratAtauJumlah * item.hargaPerUnit;
+
+            item.estimasiSelesai = "Mengikuti estimasi laundry";
+
+            return item;
+        }
+
+    void Customer::loadPromo() {
+        ifstream file("promo.txt");
+        jumlahPromo = 0;
+        string line;
+        
+        while (getline(file, line)) {
+            stringstream ss(line);
+            string nama, diskonStr, tanggal;
+
+            getline(ss, nama, '|');
+            getline(ss, diskonStr, '|');
+            getline(ss, tanggal, '|');
+
+            float diskon;
+            stringstream convert(diskonStr);
+            convert >> diskon;
+
+            daftarPromo[jumlahPromo].namaPromo = nama;
+            daftarPromo[jumlahPromo].diskon = diskon;
+            daftarPromo[jumlahPromo].masaBerlaku = tanggal;
+
+            jumlahPromo++;
+        }
+        
+        file.close();
     }
-    
-    cout << "\n" << string(50, '=') << endl;
-    cout << left << setw(15) << "" << "DAFTAR PROMO";
-    cout << "\n" << string(50, '=') << endl;
-    
-    string baris;
-    int nomorPromo = 1;
-    bool adaPromo = false;
-    
-    while (getline(file, baris)) {
-        if (!baris.empty()) {
-            adaPromo = true;
-            
-            size_t pos1 = baris.find('|');
-            size_t pos2 = baris.find('|', pos1 + 1);
-            
-            if (pos1 != string::npos && pos2 != string::npos) {
-                string namaPromo = baris.substr(0, pos1);
-                string diskonStr = baris.substr(pos1 + 1, pos2 - pos1 - 1);
-                string masaBerlaku = baris.substr(pos2 + 1);
-                
-                cout << nomorPromo << ". " << namaPromo << endl;
-                cout << "   Diskon: " << diskonStr << "%" << endl;
-                cout << "   Berlaku sampai: " << masaBerlaku << endl;
+
+
+
+    void Customer::checkPromo() {
+        loadPromo();
+        string tanggal = getTanggalSekarang();
+        int nomorPromo = 1;
+        bool adaPromo = false;
+        totalSetelahPromo = totalBiaya;
+        int i;
+        for (i = 0; i < jumlahPromo; ++i) {
+            if (tanggal <= daftarPromo[i].masaBerlaku && totalSetelahPromo <= totalBiaya) {
+                adaPromo = true;
+                if (nomorPromo == 1) cout << "PROMO!" << endl;
+                cout << nomorPromo << ". " << daftarPromo[i].namaPromo << endl;
+                double diskon = daftarPromo[i].diskon;
+                double diskonRP = (diskon / 100) * totalBiaya;
+                cout << "   Diskon: " << diskon << "%" << " : Rp " << diskonRP << endl;
+                cout << "   Berlaku sampai: " << daftarPromo[i].masaBerlaku << endl;
                 cout << string(30, '-') << endl;
                 nomorPromo++;
+                totalSetelahPromo -= diskonRP;
             }
         }
-    }
-    
-    if (!adaPromo) {
-        cout << "Belum ada promo yang tersedia." << endl;
-    }
-    
-    file.close();
-}
-
-void Admin::hapusPromo() {
-    ifstream fileInput("promo.txt");
-    if (!fileInput.is_open()) {
-        cout << "Tidak ada file promo atau gagal membuka file!" << endl;
-        return;
-    }
-    
-    string daftarPromo[100];
-	int jumlahPromo = 0;
-    string baris;
-    
-    while (getline(fileInput, baris)) {
-        if (!baris.empty()) {
-            daftarPromo[jumlahPromo] = baris;
-			jumlahPromo++;
-        }
-    }
-    fileInput.close();
-    
-    if (jumlahPromo == 0) {
-        cout << "Tidak ada promo yang tersedia untuk dihapus." << endl;
-        return;
-    }
-    
-    cout << "\n" << string(50, '=') << endl;
-    cout << left << setw(15) << "" << "HAPUS PROMO";
-    cout << "\n" << string(50, '=') << endl;
-    
-    for (int i = 0; i < jumlahPromo; i++) {
-        size_t pos1 = daftarPromo[i].find('|');
-        size_t pos2 = daftarPromo[i].find('|', pos1 + 1);
-        
-        if (pos1 != string::npos && pos2 != string::npos) {
-            string namaPromo = daftarPromo[i].substr(0, pos1);
-            string diskonStr = daftarPromo[i].substr(pos1 + 1, pos2 - pos1 - 1);
-            string masaBerlaku = daftarPromo[i].substr(pos2 + 1);
-            
-            cout << (i + 1) << ". " << namaPromo << endl;
-            cout << "   Diskon: " << diskonStr << "%" << endl;
-            cout << "   Berlaku sampai: " << masaBerlaku << endl;
-            cout << string(30, '-') << endl;
-        }
-    }
-    
-    cout << "0. Batal hapus promo" << endl << endl;
-    
-    int pilihan;
-    cout << "Pilih nomor promo yang akan dihapus: ";
-    cin >> pilihan;
-    
-    if (pilihan == 0) {
-        cout << "Penghapusan promo dibatalkan." << endl;
-        return;
-    }
-    
-    if (pilihan < 1 || pilihan > (int)jumlahPromo) {
-        cout << "Pilihan tidak valid!" << endl;
-        return;
-    }
-    
-    int indeksHapus = pilihan - 1;
-    size_t pos1 = daftarPromo[indeksHapus].find('|');
-    size_t pos2 = daftarPromo[indeksHapus].find('|', pos1 + 1);
-    
-    if (pos1 != string::npos && pos2 != string::npos) {
-        string namaPromo = daftarPromo[indeksHapus].substr(0, pos1);
-        string diskonStr = daftarPromo[indeksHapus].substr(pos1 + 1, pos2 - pos1 - 1);
-        string masaBerlaku = daftarPromo[indeksHapus].substr(pos2 + 1);
-        
-        cout << "\n=== KONFIRMASI HAPUS PROMO ===" << endl;
-        cout << "Promo yang akan dihapus:" << endl;
-        cout << "Nama Promo   : " << namaPromo << endl;
-        cout << "Diskon       : " << diskonStr << "%" << endl;
-        cout << "Masa Berlaku : " << masaBerlaku << endl;
-        cout << "\nApakah Anda yakin ingin menghapus promo ini? (y/n): ";
-        
-        char konfirmasi;
-        cin >> konfirmasi;
-        
-        if (konfirmasi == 'y' || konfirmasi == 'Y') {
-            for (int i = indeksHapus; i < jumlahPromo - 1; i++) {
-		    daftarPromo[i] = daftarPromo[i + 1];
-		}
-		jumlahPromo--;
-            
-            ofstream fileOutput("promo.txt");
-            if (!fileOutput.is_open()) {
-                cout << "Gagal menyimpan perubahan ke file!" << endl;
-                return;
-            }
-            
-            for (int i = 0; i < jumlahPromo; i++) {
-                fileOutput << daftarPromo[i] << endl;
-            }
-            fileOutput.close();
-            
-            cout << "Promo '" << namaPromo << "' berhasil dihapus!" << endl;
+        if (!adaPromo) {
+            totalSetelahPromo = 0;
+            return;
         } else {
-            cout << "Penghapusan promo dibatalkan." << endl;
+            TOTAL = totalSetelahPromo;
         }
     }
-}
 
-
-void Admin::menuPromo() {
-    while (true) {
-        cout << "\n" << string(40, '-') << endl;
-        cout << left << setw(13) << "" << "MENU PROMO";
-        cout << "\n" << string(40, '-') << endl;
-        cout << "1. Buat Promo Baru" << endl;
-        cout << "2. Lihat Semua Promo" << endl;
-        cout << "3. Hapus Promo" << endl;
-        cout << "0. Kembali ke Menu Utama" << endl << endl;
-        int pilihan;
-        cout << "Pilihan: ";
-        cin >> pilihan;
-        switch(pilihan) {
-            case 1: buatPromo(); pauseScreen(); clearScreen(); break;
-            case 2: lihatPromo(); pauseScreen(); clearScreen(); break;
-            case 3: hapusPromo();  pauseScreen(); clearScreen(); break;
-            case 0: return;
-            default: cout << "Pilihan tidak valid!" << endl;
+    // Struk transaksi
+    // Struk transaksi
+    void Customer::tampilkanStruk(const string& metodePembayaran, const string& kodeTransaksi) {
+        cout << "\n" << string(50, '=') << endl;
+        cout << "                 STRUK PEMBAYARAN" << endl;
+        cout << "                 LAUNDRY AMBA" << endl;
+        cout << string(50, '=') << endl;
+        cout << "Kode Transaksi : " << kodeTransaksi << endl;
+        cout << "Tanggal        : " << getTanggalSekarang() << endl;
+        cout << "Kasir          : Admin" << endl;
+        cout << string(50, '-') << endl;
+        cout << "Data Pelanggan:" << endl;
+        cout << "Nama           : " << user[indeksAktif].nama << endl;
+        cout << "Telepon        : " << user[indeksAktif].noTelepon << endl;
+        cout << "Alamat         : " << user[indeksAktif].alamat << endl;
+        cout << string(50, '-') << endl;
+        cout << "Detail Pesanan:" << endl;
+        totalBiaya = 0.0;
+        
+        for (int i = 0; i < jumlahKeranjang; ++i) {
+            const PesananItem& item = keranjangLayanan[i];
+            cout << (i + 1) << ". " << item.namaLayanan << endl;
+            cout << "   " << item.namaItem << endl;
+            cout << "   " << fixed << setprecision(1) << item.beratAtauJumlah 
+                << " " << item.unitSatuan << " x Rp " << fixed << setprecision(0) 
+                << item.hargaPerUnit << " = Rp " << item.subTotalHarga << endl;
+            cout << "   Estimasi: " << item.estimasiSelesai << endl;
+            totalBiaya += item.subTotalHarga;
         }
-    }
-}
+        
+        cout << "\nTOTAL KESELURUHAN: Rp " << totalBiaya << endl;
+        potonganPoin = 0;
+        totalSetelahPromo = 0;
+        TOTAL = totalBiaya;
+        
+        checkPromo();
+        
+        if (totalSetelahPromo != totalBiaya) {
+            TOTAL = totalSetelahPromo;
+        }
+        
+        if (totalSetelahPromo > 0) {
+            cout << "\nTOTAL KESELURUHAN SETELAH PROMO: Rp " << fixed << setprecision(0) << TOTAL << endl;
+        }
+        
+        // ========== ?? KODE TAMBAHAN DILETAKKAN DI SINI ?? ==========
 
-void Admin::ulasanRating() {
-    string komentar, nama, line;
-    int rating;
-    ifstream file("ulasanRating.txt");
-    if (!file.is_open()) {
-        cout << "Gagal membuka file untuk melihat ulasan dan rating!" << endl;
-        return;
-    }
-    while (file >> nama >> rating && file.ignore() && getline(file, komentar)) {
-        cout << "----------------" << endl;
-        cout << "Rating   : " << rating << endl;
-        cout << "Username : " << nama << endl;
-        cout << "Komentar : " << komentar << endl;
-        cout << "----------------" << endl;
-        cout << "Lanjut ke ulasan berikutnya?(y/n): " ;
+        
+        // Tambahkan ke jadwal pengambilan
+        for (int i = 0; i < jumlahKeranjang; i++) {
+            manajemenJadwal.tambahJadwalPengambilan(kodeTransaksi, keranjangLayanan[i].estimasiSelesai);
+        }
+        
+        // ========== ?? SAMPAI DI SINI ?? ==========
+        cout << "Metode Pembayaran: " << metodePembayaran << endl;
+        cout << string(50, '=') << endl;
+        
+        user[indeksAktif].poin += (int)(totalBiaya / 100);
+        cout << "Anda telah memperoleh " << (totalBiaya / 100) << " Poin!" << endl;
+            
         char pil;
+        cout << "Total Poin sekarang: " << user[indeksAktif].poin << endl << endl;
+        cout << "Apakah ingin menggunakan poin untuk memotong total biaya? (y/n): ";
         cin >> pil;
-        cout << endl;
-        if (pil != 'y' && pil != 'Y') break;
-    }
-    cout << "Sudah tidak ada ulasan lagi :>" << endl;
-    file.close();
-}
+        
+        if (pil == 'Y' || pil == 'y') {
+            while (true) {
+                cout << "Masukkan jumlah poin (1 poin = Rp. 1): ";
+                cin >> potonganPoin;
+                if (potonganPoin > totalBiaya) {
+                    cout << "Poin yang digunakan lebih banyak dari total biaya!" << endl << endl;
+                } else if (potonganPoin < 0 || potonganPoin > user[indeksAktif].poin) {
+                    cout << "Poin anda tidak mencukupi atau tidak valid!" << endl << endl;
+                } else {
+                    break;
+                }
+            }
+            cout << "Anda menggunakan " << potonganPoin << " poin." << endl;
+            user[indeksAktif].poin -= (int)potonganPoin;
 
-void Admin::hitungPendapatanBulanan() {
-    loadRiwayatTransaksi();
-    if (jumlahData == 0) {
-        cout << "Tidak ada data transaksi yang tersedia." << endl;
-        return;
-    }
-    int bulanInput, tahunInput;
-    cout << "\n=== HITUNG PENDAPATAN BULANAN ===" << endl;
-    do {
-        cout << "Masukkan bulan (1-12): ";
-        cin >> bulanInput;
-        if (bulanInput < 1 || bulanInput > 12) {
-            cout << "Input tidak valid! Masukkan angka 1-12." << endl;
+            totalBiaya -= potonganPoin;
+            cout << "\nTOTAL KESELURUHAN SEKARANG: Rp " << fixed << setprecision(0) << totalBiaya << endl;
+            cout << "Total Poin sekarang: " << user[indeksAktif].poin << endl << endl;
         }
-    } while (bulanInput < 1 || bulanInput > 12);
-    cout << "Masukkan tahun (contoh: 2025): ";
-    cin >> tahunInput;
-    string namaBulan[] = {"Januari", "Februari", "Maret", "April", "Mei", "Juni",
-                         "Juli", "Agustus", "September", "Oktober", "November", "Desember"};
-    int totalPendapatan = 0;
-    int jumlahTransaksiSelesai = 0;
-    for (int i = 0; i < jumlahData; i++) {
-        if (riwayat[i].status == "Selesai") {
+        
+        saveUsers();
+    }
+
+    // Simpan struk transaksi ke file.txt
+    void Customer::simpanRiwayatTransaksi(const string& metodePembayaran, const string& kodeTransaksi) {
+        ofstream file("riwayat_transaksi.txt", ios::app);
+        if (!file.is_open()) {
+            cout << "Gagal membuka file untuk menyimpan riwayat transaksi!" << endl;
+            return;
+        }
+        file << "=========================\n";
+        file << "Kode Transaksi : " << kodeTransaksi << "\n";
+        file << "Tanggal        : " << getTanggalSekarang() <<"\n";
+        file << "Nama Pelanggan : " << user[indeksAktif].nama << "\n";
+        file << "Telepon        : " << user[indeksAktif].noTelepon << "\n";
+        file << "Alamat         : " << user[indeksAktif].alamat << "\n";
+        file << "Metode Bayar   : " << metodePembayaran << "\n";
+        file << "Status         : Diterima" << "\n";
+        file << "-------------------------\n";
+        double total = 0.0;
+        int i;
+        for (i = 0; i < jumlahKeranjang; ++i) {
+            const PesananItem& item = keranjangLayanan[i];
+            file << "- " << item.kategoriLayanan << " | " << item.namaLayanan << " | "
+                << item.namaItem << " | " << fixed << setprecision(1) << item.beratAtauJumlah << " "
+                << item.unitSatuan << " x Rp" << fixed << setprecision(0) << item.hargaPerUnit
+                << " = Rp" << item.subTotalHarga << "\n";
+            total += item.subTotalHarga;
+        }
+        if (potonganPoin > 0 || totalSetelahPromo > 0) {
+            file << "SUBTOTAL.: Rp" << fixed << setprecision(0) << total << "\n";
+            if (potonganPoin > 0) {
+                file << "Potongan poin: Rp" << potonganPoin << "\n";
+                total -= potonganPoin;
+            }
+            if (totalSetelahPromo > 0) {
+                file << "Promo: Rp" << totalBiaya - totalSetelahPromo << "\n";
+                total -= totalBiaya - totalSetelahPromo;
+            }
+        }
+        file << "\nTOTAL: Rp" << fixed << setprecision(0) << total << "\n";
+        file << "=========================\n\n";
+        file.close();
+        cout << "Riwayat transaksi berhasil disimpan.\n";
+    }
+
+    void Admin::tampilkanDashboard() {
+        string today = getTanggalSekarang();
+
+        double totalPendapatanHariIni = 0;
+        int totalPesananHariIni = 0;
+        int laundryDiproses = 0;
+        int laundrySelesai = 0;
+
+        string customerHariIni[100];
+        int jumlahCustomerHariIni = 0;
+
+        loadRiwayatTransaksi();
+
+        for (int i = 0; i < jumlahData; i++) {
+
+            if (riwayat[i].tanggalLengkap == today) {
+
+                totalPesananHariIni++;
+
+                bool customerSudahAda = false;
+
+                for (int j = 0; j < jumlahCustomerHariIni; j++) {
+                    if (customerHariIni[j] == riwayat[i].nama) {
+                        customerSudahAda = true;
+                        break;
+                    }
+                }
+
+                if (!customerSudahAda && jumlahCustomerHariIni < 100) {
+                    customerHariIni[jumlahCustomerHariIni++] = riwayat[i].nama;
+                }
+
+                if (riwayat[i].status == "Selesai") {
+
+                    laundrySelesai++;
+
+                    string detailTransaksi = riwayat[i].detailTransaksi;
+
+                    size_t posTotal = detailTransaksi.rfind("TOTAL: Rp");
+
+                    if (posTotal != string::npos) {
+
+                        string totalStr = detailTransaksi.substr(posTotal + 9);
+
+                        double total = atof(totalStr.c_str());
+
+                        totalPendapatanHariIni += total;
+                    }
+
+                } else {
+
+                    laundryDiproses++;
+
+                }
+
+            }
+
+        }
+
+        cout << endl;
+        cout << setw(38) << "                      DASHBOARD ADMIN" << endl;
+        garisAtas();
+
+        cout << left;
+        cout << setw(25) << " Hari / Tanggal"      << ": " << today << endl;
+
+        garisTengah();
+
+        cout << setw(25) << " Customer Hari Ini"   << ": " << jumlahCustomerHariIni << endl;
+        cout << setw(25) << " Laundry Masuk"       << ": " << totalPesananHariIni << endl;
+        cout << setw(25) << " Laundry Diproses"    << ": " << laundryDiproses << endl;
+        cout << setw(25) << " Laundry Selesai"     << ": " << laundrySelesai << endl;
+
+        garisTengah();
+
+        cout << setw(25) << " Pendapatan Hari Ini" << ": Rp "
+            << fixed << setprecision(0) << totalPendapatanHariIni << endl;
+
+        cout << setw(25) << " Pengeluaran Hari Ini"
+            << ": Rp "
+            << fixed << setprecision(0)
+            << pengeluaran.totalPengeluaranHariIni()
+            << endl;
+
+        garisBawah();
+    }
+
+
+    double Admin::hitungPendapatanHariIni()
+    {
+        string today = getTanggalSekarang();
+        double totalPendapatanHariIni = 0;
+
+        loadRiwayatTransaksi();
+
+        for (int i = 0; i < jumlahData; i++)
+        {
+            if (riwayat[i].tanggalLengkap == today &&
+                riwayat[i].status == "Selesai")
+            {
+                string detail = riwayat[i].detailTransaksi;
+
+                size_t pos = detail.rfind("TOTAL: Rp");
+
+                if (pos != string::npos)
+                {
+                    string angka = detail.substr(pos + 9);
+
+                    totalPendapatanHariIni += atof(angka.c_str());
+                }
+            }
+        }
+
+        return totalPendapatanHariIni;
+    }
+
+    void Admin::dashboardKeuangan()
+    {
+        double pendapatan = hitungPendapatanHariIni();
+
+        double pengeluaranHariIni =
+            pengeluaran.totalPengeluaranHariIni();
+
+        double laba = pendapatan - pengeluaranHariIni;
+
+        cout << "\n=============================================\n";
+        cout << "          DASHBOARD KEUANGAN\n";
+        cout << "=============================================\n";
+
+        cout << "Pendapatan Hari Ini  : Rp "
+            << fixed << setprecision(0)
+            << pendapatan << endl;
+
+        cout << "Pengeluaran Hari Ini : Rp "
+            << pengeluaranHariIni << endl;
+
+        cout << "---------------------------------------------\n";
+
+        cout << "LABA HARI INI        : Rp "
+            << laba << endl;
+
+        cout << "=============================================\n";
+
+    }
+
+    void Customer::loadRiwayatTransaksi() {
+        ifstream file("riwayat_transaksi.txt");
+        if (!file.is_open()) {
+            jumlahData = 0;
+            return;
+        }
+        string baris;
+        int indeks = 0;
+        bool sedangMembacaTransaksi = false;
+        string detailLengkap = "";
+        while (getline(file, baris) && indeks < MAX_RIWAYAT) {
+            if (sedangMembacaTransaksi) {
+                detailLengkap += baris + "\n";
+            }
+            if (baris.find("Kode Transaksi : ") == 0) {
+                riwayat[indeks].kode = baris.substr(17);
+                sedangMembacaTransaksi = true;
+                detailLengkap = baris + "\n";
+            } else if (baris.find("Tanggal        : ") == 0) {
+                string stringTanggal = baris.substr(17);
+                riwayat[indeks].tanggalLengkap = stringTanggal;
+            } else if (baris.find("Nama Pelanggan : ") == 0) {
+                riwayat[indeks].nama = baris.substr(17);
+            } else if (baris.find("Telepon        : ") == 0) {
+                riwayat[indeks].telepon = baris.substr(17);
+            } else if (baris.find("Alamat         : ") == 0) {
+                riwayat[indeks].alamat = baris.substr(17);
+            } else if (baris.find("Metode Bayar   : ") == 0) {
+                riwayat[indeks].metode = baris.substr(17);
+            } else if (baris.find("Status         : ") == 0) {
+                riwayat[indeks].status = baris.substr(17);
+            } else if (baris == "=========================") {
+                if (sedangMembacaTransaksi) {
+                    riwayat[indeks].detailTransaksi = detailLengkap;
+                    indeks++;
+                    sedangMembacaTransaksi = false;
+                    detailLengkap = "";
+                }
+            }
+        }
+        jumlahData = indeks;
+        file.close();
+    }
+
+    void Admin::loadRiwayatTransaksi() {
+        ifstream file("riwayat_transaksi.txt");
+        if (!file.is_open()) {
+            jumlahData = 0;
+            return;
+        }
+        string baris;
+        int indeks = 0;
+        bool sedangMembacaTransaksi = false;
+        string detailLengkap = "";
+        while (getline(file, baris) && indeks < MAX_RIWAYAT) {
+            if (sedangMembacaTransaksi) {
+                detailLengkap += baris + "\n";
+            }
+            if (baris.find("Kode Transaksi : ") == 0) {
+                riwayat[indeks].kode = baris.substr(17);
+                sedangMembacaTransaksi = true;
+                detailLengkap = baris + "\n";
+            } else if (baris.find("Tanggal        : ") == 0) {
+                string stringTanggal = baris.substr(17);
+                riwayat[indeks].tanggalLengkap = stringTanggal;
+            } else if (baris.find("Nama Pelanggan : ") == 0) {
+                riwayat[indeks].nama = baris.substr(17);
+            } else if (baris.find("Telepon        : ") == 0) {
+                riwayat[indeks].telepon = baris.substr(17);
+            } else if (baris.find("Alamat         : ") == 0) {
+                riwayat[indeks].alamat = baris.substr(17);
+            } else if (baris.find("Metode Bayar   : ") == 0) {
+                riwayat[indeks].metode = baris.substr(17);
+            } else if (baris.find("Status         : ") == 0) {
+                riwayat[indeks].status = baris.substr(17);
+            } else if (baris == "=========================") {
+                if (sedangMembacaTransaksi) {
+                    riwayat[indeks].detailTransaksi = detailLengkap;
+                    indeks++;
+                    sedangMembacaTransaksi = false;
+                    detailLengkap = "";
+                }
+            }
+        }
+        jumlahData = indeks;
+        file.close();
+    }
+
+    void Admin::lihatUserAdmin() {
+        ifstream file("users.txt");
+        if (!file.is_open()) {
+            cerr << "Gagal membuka file users.txt\n";
+            return;
+        }
+        cout << "\n" << string(40, '-') << endl;
+        cout << left << setw(10) << "" << "DAFTAR AKUN ADMIN";
+        cout << "\n" << string(40, '-') << endl;
+        string baris, usernameSekarang = "";
+        int jumlahAdmin = 0;
+        bool adalahAdmin = false, sudahAdaUsername = false;
+        while(getline(file, baris)) {
+            if (baris.empty()) continue;
+            if (baris == "=========================") {
+                if (adalahAdmin && sudahAdaUsername && !usernameSekarang.empty()) {
+                    jumlahAdmin++;
+                    cout << jumlahAdmin << ". " << usernameSekarang << endl;
+                }
+                usernameSekarang = "";
+                adalahAdmin = false;
+                sudahAdaUsername = false;
+                continue;
+            }
+            if (baris.find("Username   : ") != string::npos) {
+                usernameSekarang = baris.substr(13);
+                sudahAdaUsername = true;
+            }
+            if (baris.find("Role       : admin") != string::npos) {
+                adalahAdmin = true;
+            }
+        }
+        if (adalahAdmin && sudahAdaUsername && !usernameSekarang.empty()) {
+            jumlahAdmin++;
+            cout << jumlahAdmin << ". " << usernameSekarang << endl;
+        }
+        cout << "\nTotal akun admin: " << jumlahAdmin << endl;
+        if (jumlahAdmin == 0) {
+            cout << "Tidak ada data admin yang ditemukan." << endl;
+        }
+        file.close();
+    }
+
+    void Admin::lihatUserPengguna() {
+        ifstream file("users.txt");
+        if (!file.is_open()) {
+            cerr << "Gagal membuka file users.txt\n";
+            return;
+        }
+        cout << "\n" << string(40, '-') << endl;
+        cout << left << setw(10) << "" << "DAFTAR  AKUN CUSTOMER";
+        cout << "\n" << string(40, '-') << endl;
+        string baris;
+        int jumlahCustomer = 0;
+        string dataUser[10];
+        int idx = 0;
+        bool adalahCustomer = false;
+        while(getline(file, baris)) {
+            if (baris.empty()) continue;
+            if (baris == "=========================") {
+                if (adalahCustomer && idx > 0) {
+                    cout << "=========================" << endl;
+                    for (int i = 0; i < idx; ++i) {
+                        if (dataUser[i].find("Password   : ") == string::npos) {
+                            cout << dataUser[i] << endl;
+                        }
+                    }
+                    cout << "=========================" << endl;
+                    jumlahCustomer++;
+                }
+                idx = 0;
+                adalahCustomer = false;
+                continue;
+            }
+            dataUser[idx++] = baris;
+            if (baris.find("Role       : customer") != string::npos) {
+                adalahCustomer = true;
+            }
+        }
+        if (adalahCustomer && idx > 0) {
+            cout << "=========================" << endl;
+            for (int i = 0; i < idx; ++i) {
+                if (dataUser[i].find("Password   : ") == string::npos) {
+                    cout << dataUser[i] << endl;
+                }
+            }
+            cout << "=========================" << endl;
+            jumlahCustomer++;
+        }
+        cout << "\nTotal akun customer: " << jumlahCustomer << endl;
+        if (jumlahCustomer == 0) {
+            cout << "Tidak ada data customer yang ditemukan." << endl;
+        }
+        file.close();
+    }
+
+    void Admin::dataUser() {
+        while (true) {
+            cout << "\n" << string(40, '-') << endl;
+            cout << left << setw(10) << "" << "MENU DATA USER";
+            cout << "\n" << string(40, '-') << endl;
+            cout << "1. Lihat Data Admin" << endl;
+            cout << "2. Lihat Data Customer" << endl;
+            cout << "0. Kembali ke Menu Utama" << endl << endl;
+            int pilihan;
+            cout << "Pilihan: ";
+            cin >> pilihan;
+            cout << endl;
+            switch(pilihan) {
+                case 1: lihatUserAdmin(); break;
+                case 2: lihatUserPengguna(); break;
+                case 0: 
+                    return;
+                default: 
+                    cout << "Pilihan tidak valid!" << endl; 
+            }
+        }
+    }
+
+    void Admin::tampilkanHasilPencarian(bool ditemukan[], const string& jenisPencarian) {
+        bool adaHasil = false;
+        cout << "\nHasil pencarian " << jenisPencarian << ":\n";
+        for (int i = 0; i < jumlahData; i++) {
+            if (ditemukan[i]) {
+                adaHasil = true;
+                cout << riwayat[i].detailTransaksi << endl;
+            }
+        }
+        if (!adaHasil) {
+            cout << "Data tidak ditemukan.\n";
+        }
+    }
+
+    void Admin::cariByTanggal() {
+        loadRiwayatTransaksi();
+        bool ditemukan[MAX_RIWAYAT] = {0};
+        int inputTanggal, inputBulan, inputTahun;
+        cout << "=== PENCARIAN BERDASARKAN TANGGAL ===" << endl;
+        do {
+            cout << "Masukkan tanggal (1-31): ";
+            cin >> inputTanggal;
+            if (inputTanggal < 1 || inputTanggal > 31) {
+                cout << "Input tidak valid! Masukkan angka 1-31." << endl;
+            }
+        } while (inputTanggal < 1 || inputTanggal > 31);
+        do {
+            cout << "Masukkan bulan (1-12): ";
+            cin >> inputBulan;
+            if (inputBulan < 1 || inputBulan > 12) {
+                cout << "Input tidak valid! Masukkan angka 1-12." << endl;
+            }
+        } while (inputBulan < 1 || inputBulan > 12);
+        cout << "Masukkan tahun (contoh: 2025): ";
+        cin >> inputTahun;
+        stringstream ss;
+        ss << inputTahun << "-";
+        if (inputBulan < 10) ss << "0";
+        ss << inputBulan << "-";
+        if (inputTanggal < 10) ss << "0";
+        ss << inputTanggal;
+        string tanggalDicari = ss.str();
+        for (int i = 0; i < jumlahData; i++) {
             string detailTransaksi = riwayat[i].detailTransaksi;
             size_t posTanggal = detailTransaksi.find("Tanggal        : ");
             if (posTanggal != string::npos) {
@@ -3546,28 +2990,585 @@ void Admin::hitungPendapatanBulanan() {
                 size_t posAkhir = detailTransaksi.find("\n", posAwal);
                 if (posAkhir != string::npos) {
                     string tanggalRiwayat = detailTransaksi.substr(posAwal, posAkhir - posAwal);
-                    if (tanggalRiwayat.length() >= 10) {
-                        string tahunStr = tanggalRiwayat.substr(0, 4);
-                        string bulanStr = tanggalRiwayat.substr(5, 2);
-                        int tahunRiwayat = atoi(tahunStr.c_str());
-                        int bulanRiwayat = atoi(bulanStr.c_str());
-                        if (bulanRiwayat == bulanInput && tahunRiwayat == tahunInput) {
-                            size_t posTotalAkhir = detailTransaksi.rfind("TOTAL: Rp");
-                            if (posTotalAkhir != string::npos) {
-                                size_t posAwalTotal = posTotalAkhir + 9;
-                                size_t posAkhirTotal = detailTransaksi.find("\n", posAwalTotal);
-                                if (posAkhirTotal == string::npos)
-                                    posAkhirTotal = detailTransaksi.length();
-                                if (posAkhirTotal > posAwalTotal) {
-                                    string totalStr = detailTransaksi.substr(posAwalTotal, posAkhirTotal - posAwalTotal);
-                                    size_t awal = totalStr.find_first_not_of(" \t\r\n");
-                                    size_t akhir = totalStr.find_last_not_of(" \t\r\n");
-                                    if (awal != string::npos && akhir != string::npos) {
-                                        totalStr = totalStr.substr(awal, akhir - awal + 1);
+                    if (tanggalRiwayat == tanggalDicari) {
+                        ditemukan[i] = true;
+                    }
+                }
+            }
+        }
+        string kriteria = "berdasarkan tanggal " + tanggalDicari;
+        tampilkanHasilPencarian(ditemukan, kriteria);
+    }
+
+    void Admin::cariByNama() {
+        loadRiwayatTransaksi();
+        bool ditemukan[MAX_RIWAYAT] = {0};
+        string nama;
+        cout << "Masukkan nama pelanggan: ";
+        cin.ignore();
+        getline(cin, nama);
+        nama = toLowerCase(nama);
+        for (int i = 0; i < jumlahData; i++) {
+            string namaRiwayat = riwayat[i].nama;
+            namaRiwayat = toLowerCase(namaRiwayat);
+            if (namaRiwayat.find(nama) != string::npos) {
+                ditemukan[i] = true;
+            }
+        }
+        tampilkanHasilPencarian(ditemukan, "berdasarkan nama");
+    }
+
+    void Admin::cariByKodeTransaksi() {
+        loadRiwayatTransaksi();
+        bool ditemukan[MAX_RIWAYAT] = {0};
+        string kode;
+        cout << "Masukkan kode transaksi : ";
+        cin >> kode;
+        kode = toUpperCase(kode);
+        for (int i = 0; i < jumlahData; i++) {
+            string kodeRiwayat = riwayat[i].kode;
+            kodeRiwayat = toUpperCase(kodeRiwayat);
+            if (kodeRiwayat.find(kode) != string::npos) {
+                ditemukan[i] = true;
+            }
+        }
+        tampilkanHasilPencarian(ditemukan, "berdasarkan kode transaksi");
+    }
+
+    void Admin::cariByStatus() {
+        loadRiwayatTransaksi();
+        bool ditemukan[MAX_RIWAYAT] = {0};
+        cout << "\n--- PENCARIAN BERDASARKAN STATUS ---" << endl;
+        cout << "1. Status Selesai" << endl;
+        cout << "2. Status Belum Selesai" << endl;
+        cout << "0. Kembali" << endl << endl;
+        int pilihan;
+        cout << "Pilihan: ";
+        cin >> pilihan;
+        cout << endl;
+        string kriteria;
+        switch(pilihan) {
+            case 1:
+                for (int i = 0; i < jumlahData; i++) {
+                    if (riwayat[i].status == "Selesai") ditemukan[i] = true;
+                }
+                kriteria = "dengan status Selesai";
+                break;
+            case 2:
+                for (int i = 0; i < jumlahData; i++) {
+                    if (riwayat[i].status != "Selesai") ditemukan[i] = true;
+                }
+                kriteria = "dengan status Belum Selesai";
+                break;
+            case 0: return;
+            default: cout << "Pilihan tidak valid!" << endl; return;
+        }
+        tampilkanHasilPencarian(ditemukan, kriteria);
+    }
+
+    // Fungsi cari riwayat transaksi (linear search)
+    /*void Admin::cariRiwayatTransaksiLinear(const string& keyword) {
+        loadRiwayatTransaksi();
+        bool ditemukan = false;
+        for (int i = 0; i < jumlahData; ++i) {
+            if (riwayat[i].kode == keyword) {
+                ditemukan = true;
+                cout << "\n--- RIWAYAT DITEMUKAN ---" << endl;
+                cout << riwayat[i].detailTransaksi << endl;
+            }
+        }
+        if (!ditemukan) {
+            cout << "Tidak ada riwayat transaksi yang cocok dengan kata kunci " << keyword << endl << endl;
+        }
+    }*/
+
+    // Fungsi cari data user (linear search)
+    void Admin::cariUserLinear(const string& keyword) {
+        bool ditemukan = false;
+        for (int i = 0; i < jumlahPengguna; ++i) {
+            if (user[i].username == keyword) {
+                ditemukan = true;
+                cout << "\n--- USER DITEMUKAN ---" << endl;
+                cout << "Nama       : " << user[i].nama << endl;
+                cout << "Username   : " << user[i].username << endl;
+                cout << "Role       : " << user[i].role << endl;
+                cout << "Alamat     : " << user[i].alamat << endl;
+                cout << "No.Telepon : " << user[i].noTelepon << endl;
+                cout << "Poin       : " << user[i].poin << endl;
+                cout << "----------------------" << endl;
+            }
+        }
+        if (!ditemukan) {
+            cout << "Tidak ada user yang cocok dengan kata kunci "<< keyword << endl << endl;
+        }
+    }
+
+    void Admin::menuCariRiwayat() {
+        while (true) {
+            cout << "\n" << string(40, '-') << endl;
+            cout << left << setw(9) << "" << "MENU PENCARIAN RIWAYAT";
+            cout << "\n" << string(40, '-') << endl;
+            cout << "1. Cari berdasarkan Tanggal Lengkap (Tanggal-Bulan-Tahun)" << endl;
+            cout << "2. Cari berdasarkan Nama Pelanggan" << endl;
+            cout << "3. Cari berdasarkan Kode Transaksi" << endl;
+            cout << "4. Cari berdasarkan Status" << endl;
+            cout << "0. Kembali" << endl << endl;
+            int pilihan;
+            cout << "Pilihan: ";
+            cin >> pilihan;
+            cout << endl;
+            switch(pilihan) {
+                case 1: cariByTanggal(); break;
+                case 2: cariByNama(); break;
+                case 3:   {
+                    string keyword;
+                    cout << "Masukkan kode transaksi : ";
+                    cin.ignore();
+                    getline(cin, keyword);
+                    tampilkanHasilBinaryKode(keyword);
+                    break;
+                }
+                case 4: cariByStatus(); break;
+                case 0: return;
+                default: cout << "Pilihan tidak valid!" << endl;
+            }
+        }
+    }
+
+    // Sortir Riwayat Transaksi Berdasarkan Tanggal 
+    void Admin::sortRiwayatByTanggalTerbaru() {
+        for (int i = 1; i < jumlahData; ++i) {
+            Riwayat temp = riwayat[i];
+            int j = i - 1;
+            while (j >= 0 && riwayat[j].tanggalLengkap < temp.tanggalLengkap) {
+                riwayat[j + 1] = riwayat[j];
+                --j;
+            }
+            riwayat[j + 1] = temp;
+        }
+    }
+
+    void Admin::bacaRiwayatLayanan() {
+        sortRiwayatByTanggalTerbaru();
+        if (jumlahData == 0) {
+            cout << "Tidak ada riwayat transaksi yang tersedia." << endl;
+            return;
+        }
+        for (int i = 0; i < jumlahData; ++i) {
+            cout << riwayat[i].detailTransaksi << endl;
+        }
+    }
+
+    void Admin::updateStatus() {
+        loadRiwayatTransaksi();
+        if (jumlahData == 0) {
+            cout << "Tidak ada data transaksi yang tersedia." << endl;
+            return;
+        }
+        string kodeTransaksi;
+        cout << "\n=== UPDATE STATUS LAUNDRY ===" << endl;
+        cout << "Masukkan kode transaksi: ";
+        cin >> kodeTransaksi;
+        kodeTransaksi = toUpperCase(kodeTransaksi);
+        int indeksDitemukan = -1;
+        for (int i = 0; i < jumlahData; i++) {
+            string kodeRiwayat = riwayat[i].kode;
+            kodeRiwayat = toUpperCase(kodeRiwayat);
+            if (kodeRiwayat == kodeTransaksi) {
+                indeksDitemukan = i;
+                break;
+            }
+        }
+        if (indeksDitemukan == -1) {
+            cout << "Transaksi dengan kode " << kodeTransaksi << " tidak ditemukan!" << endl;
+            return;
+        }
+        cout << "\nData transaksi ditemukan:" << endl;
+        cout << "Kode Transaksi: " << riwayat[indeksDitemukan].kode << endl;
+        cout << "Nama Pelanggan: " << riwayat[indeksDitemukan].nama << endl;
+        cout << "Status Saat Ini: " << riwayat[indeksDitemukan].status << endl;
+        cout << "\nPilih status baru:" << endl;
+        cout << "1. Dicuci" << endl;
+        cout << "2. Disetrika" << endl;
+        cout << "3. Siap Ambil" << endl;
+        cout << "4. Diantar" << endl;
+        cout << "5. Selesai" << endl;
+        cout << "0. Batal Update" << endl;
+        int pilihanStatus;
+        cout << "Pilihan: ";
+        cin >> pilihanStatus;
+        string statusBaru;
+        switch(pilihanStatus) {
+            case 1: statusBaru = "Dicuci"; break;
+            case 2: statusBaru = "Disetrika"; break;
+            case 3: statusBaru = "Siap Ambil"; break;
+            case 4: statusBaru = "Diantar"; break;
+            case 5: statusBaru = "Selesai"; break;
+            case 0: cout << "Update status dibatalkan." << endl; return;
+            default: cout << "Pilihan tidak valid!" << endl; return;
+        }
+        cout << "\nApakah Anda yakin ingin mengubah status dari '"
+            << riwayat[indeksDitemukan].status << "' menjadi '" << statusBaru << "'? (y/n): ";
+        char konfirmasi;
+        cin >> konfirmasi;
+        if (konfirmasi == 'y' || konfirmasi == 'Y') {
+            riwayat[indeksDitemukan].status = statusBaru;
+            string detailLama = riwayat[indeksDitemukan].detailTransaksi;
+            size_t posStatus = detailLama.find("Status         : ");
+            if (posStatus != string::npos) {
+                size_t posAkhirBaris = detailLama.find("\n", posStatus);
+                if (posAkhirBaris != string::npos) {
+                    string barisStatusBaru = "Status         : " + statusBaru;
+                    riwayat[indeksDitemukan].detailTransaksi =
+                        detailLama.substr(0, posStatus) + barisStatusBaru +
+                        detailLama.substr(posAkhirBaris);
+                }
+            }
+            simpanRiwayatKeFile();
+            cout << "Status berhasil diperbarui menjadi: " << statusBaru << endl;
+        } else {
+            cout << "Update status dibatalkan." << endl;
+        }
+    }
+
+    void Admin::simpanRiwayatKeFile() {
+        ofstream file("riwayat_transaksi.txt");
+        if (!file.is_open()) {
+            cerr << "Gagal membuka file untuk penulisan!" << endl;
+            return;
+        }
+        for (int i = 0; i < jumlahData; i++) {
+            file << riwayat[i].detailTransaksi;
+            if (i < jumlahData - 1) {
+                file << endl;
+            }
+        }
+        file.close();
+    }
+
+    void Admin::buatPromo() {
+        string namaPromo, masaBerlaku;
+        float diskon;
+        
+        cout << "\n=== BUAT PROMO BARU ===" << endl;
+        
+        cout << "Masukkan nama promo: ";
+        cin.ignore(); 
+        getline(cin, namaPromo);
+        
+        do {
+            cout << "Masukkan besaran diskon (0.1-100): ";
+            cin >> diskon;
+            
+            if (diskon < 0.1 || diskon > 100) {
+                cout << "Input tidak valid! Masukkan angka 0.1-100." << endl;
+            }
+        } while (diskon < 0.1 || diskon > 100);
+        
+        do {
+            cout << "Masukkan masa berlaku (yyyy-mm-dd): ";
+            cin >> masaBerlaku;
+            
+            if (masaBerlaku.length() != 10 || masaBerlaku[4] != '-' || masaBerlaku[7] != '-') {
+                cout << "Format tidak valid! Gunakan format yyyy-mm-dd (contoh: 2025-01-31)" << endl;
+            } else {
+                bool formatValid = true;
+                for (int i = 0; i < 10; i++) {
+                    if (i == 4 || i == 7) continue; 
+                    if (!isdigit(masaBerlaku[i])) {
+                        formatValid = false;
+                        break;
+                    }
+                }
+                
+                if (!formatValid) {
+                    cout << "Format tidak valid! Gunakan format yyyy-mm-dd dengan angka yang benar" << endl;
+                } else {
+                    string bulanStr = masaBerlaku.substr(5, 2);
+                    string tanggalStr = masaBerlaku.substr(8, 2);
+                    int bulan = atoi(bulanStr.c_str());
+                    int tanggal = atoi(tanggalStr.c_str());
+                    
+                    if (bulan < 1 || bulan > 12 || tanggal < 1 || tanggal > 31) {
+                        cout << "Tanggal atau bulan tidak valid!" << endl;
+                    } else {
+                        break; 
+                    }
+                }
+            }
+        } while (true);
+        
+        cout << "\n=== KONFIRMASI PROMO ===" << endl;
+        cout << "Nama Promo   : " << namaPromo << endl;
+        cout << "Diskon       : " << diskon << "%" << endl;
+        cout << "Masa Berlaku : " << masaBerlaku << endl;
+        cout << "\nApakah data promo sudah benar? (y/n): ";
+        
+        char konfirmasi;
+        cin >> konfirmasi;
+        
+        if (konfirmasi == 'y' || konfirmasi == 'Y') {
+            ofstream file("promo.txt", ios::app);
+            if (!file.is_open()) {
+                cout << "Gagal membuka file promo.txt!" << endl;
+                return;
+            }
+            
+            file << namaPromo << "|" << diskon << "|" << masaBerlaku << endl;
+            file.close();
+            
+            cout << "Promo berhasil dibuat dan disimpan!" << endl;
+        } else {
+            cout << "Pembuatan promo dibatalkan." << endl;
+        }
+    }
+
+    void Admin::lihatPromo() {
+        ifstream file("promo.txt");
+        if (!file.is_open()) {
+            cout << "Tidak ada file promo atau gagal membuka file!" << endl;
+            return;
+        }
+        
+        cout << "\n" << string(50, '=') << endl;
+        cout << left << setw(15) << "" << "DAFTAR PROMO";
+        cout << "\n" << string(50, '=') << endl;
+        
+        string baris;
+        int nomorPromo = 1;
+        bool adaPromo = false;
+        
+        while (getline(file, baris)) {
+            if (!baris.empty()) {
+                adaPromo = true;
+                
+                size_t pos1 = baris.find('|');
+                size_t pos2 = baris.find('|', pos1 + 1);
+                
+                if (pos1 != string::npos && pos2 != string::npos) {
+                    string namaPromo = baris.substr(0, pos1);
+                    string diskonStr = baris.substr(pos1 + 1, pos2 - pos1 - 1);
+                    string masaBerlaku = baris.substr(pos2 + 1);
+                    
+                    cout << nomorPromo << ". " << namaPromo << endl;
+                    cout << "   Diskon: " << diskonStr << "%" << endl;
+                    cout << "   Berlaku sampai: " << masaBerlaku << endl;
+                    cout << string(30, '-') << endl;
+                    nomorPromo++;
+                }
+            }
+        }
+        
+        if (!adaPromo) {
+            cout << "Belum ada promo yang tersedia." << endl;
+        }
+        
+        file.close();
+    }
+
+    void Admin::hapusPromo() {
+        ifstream fileInput("promo.txt");
+        if (!fileInput.is_open()) {
+            cout << "Tidak ada file promo atau gagal membuka file!" << endl;
+            return;
+        }
+        
+        string daftarPromo[100];
+        int jumlahPromo = 0;
+        string baris;
+        
+        while (getline(fileInput, baris)) {
+            if (!baris.empty()) {
+                daftarPromo[jumlahPromo] = baris;
+                jumlahPromo++;
+            }
+        }
+        fileInput.close();
+        
+        if (jumlahPromo == 0) {
+            cout << "Tidak ada promo yang tersedia untuk dihapus." << endl;
+            return;
+        }
+        
+        cout << "\n" << string(50, '=') << endl;
+        cout << left << setw(15) << "" << "HAPUS PROMO";
+        cout << "\n" << string(50, '=') << endl;
+        
+        for (int i = 0; i < jumlahPromo; i++) {
+            size_t pos1 = daftarPromo[i].find('|');
+            size_t pos2 = daftarPromo[i].find('|', pos1 + 1);
+            
+            if (pos1 != string::npos && pos2 != string::npos) {
+                string namaPromo = daftarPromo[i].substr(0, pos1);
+                string diskonStr = daftarPromo[i].substr(pos1 + 1, pos2 - pos1 - 1);
+                string masaBerlaku = daftarPromo[i].substr(pos2 + 1);
+                
+                cout << (i + 1) << ". " << namaPromo << endl;
+                cout << "   Diskon: " << diskonStr << "%" << endl;
+                cout << "   Berlaku sampai: " << masaBerlaku << endl;
+                cout << string(30, '-') << endl;
+            }
+        }
+        
+        cout << "0. Batal hapus promo" << endl << endl;
+        
+        int pilihan;
+        cout << "Pilih nomor promo yang akan dihapus: ";
+        cin >> pilihan;
+        
+        if (pilihan == 0) {
+            cout << "Penghapusan promo dibatalkan." << endl;
+            return;
+        }
+        
+        if (pilihan < 1 || pilihan > (int)jumlahPromo) {
+            cout << "Pilihan tidak valid!" << endl;
+            return;
+        }
+        
+        int indeksHapus = pilihan - 1;
+        size_t pos1 = daftarPromo[indeksHapus].find('|');
+        size_t pos2 = daftarPromo[indeksHapus].find('|', pos1 + 1);
+        
+        if (pos1 != string::npos && pos2 != string::npos) {
+            string namaPromo = daftarPromo[indeksHapus].substr(0, pos1);
+            string diskonStr = daftarPromo[indeksHapus].substr(pos1 + 1, pos2 - pos1 - 1);
+            string masaBerlaku = daftarPromo[indeksHapus].substr(pos2 + 1);
+            
+            cout << "\n=== KONFIRMASI HAPUS PROMO ===" << endl;
+            cout << "Promo yang akan dihapus:" << endl;
+            cout << "Nama Promo   : " << namaPromo << endl;
+            cout << "Diskon       : " << diskonStr << "%" << endl;
+            cout << "Masa Berlaku : " << masaBerlaku << endl;
+            cout << "\nApakah Anda yakin ingin menghapus promo ini? (y/n): ";
+            
+            char konfirmasi;
+            cin >> konfirmasi;
+            
+            if (konfirmasi == 'y' || konfirmasi == 'Y') {
+                for (int i = indeksHapus; i < jumlahPromo - 1; i++) {
+                daftarPromo[i] = daftarPromo[i + 1];
+            }
+            jumlahPromo--;
+                
+                ofstream fileOutput("promo.txt");
+                if (!fileOutput.is_open()) {
+                    cout << "Gagal menyimpan perubahan ke file!" << endl;
+                    return;
+                }
+                
+                for (int i = 0; i < jumlahPromo; i++) {
+                    fileOutput << daftarPromo[i] << endl;
+                }
+                fileOutput.close();
+                
+                cout << "Promo '" << namaPromo << "' berhasil dihapus!" << endl;
+            } else {
+                cout << "Penghapusan promo dibatalkan." << endl;
+            }
+        }
+    }
+
+
+    void Admin::menuPromo() {
+        while (true) {
+            cout << "\n" << string(40, '-') << endl;
+            cout << left << setw(13) << "" << "MENU PROMO";
+            cout << "\n" << string(40, '-') << endl;
+            cout << "1. Buat Promo Baru" << endl;
+            cout << "2. Lihat Semua Promo" << endl;
+            cout << "3. Hapus Promo" << endl;
+            cout << "0. Kembali ke Menu Utama" << endl << endl;
+            int pilihan;
+            cout << "Pilihan: ";
+            cin >> pilihan;
+            switch(pilihan) {
+                case 1: buatPromo(); pauseScreen(); clearScreen(); break;
+                case 2: lihatPromo(); pauseScreen(); clearScreen(); break;
+                case 3: hapusPromo();  pauseScreen(); clearScreen(); break;
+                case 0: return;
+                default: cout << "Pilihan tidak valid!" << endl;
+            }
+        }
+    }
+
+    void Admin::ulasanRating() {
+        string komentar, nama, line;
+        int rating;
+        ifstream file("ulasanRating.txt");
+        if (!file.is_open()) {
+            cout << "Gagal membuka file untuk melihat ulasan dan rating!" << endl;
+            return;
+        }
+        while (file >> nama >> rating && file.ignore() && getline(file, komentar)) {
+            cout << "----------------" << endl;
+            cout << "Rating   : " << rating << endl;
+            cout << "Username : " << nama << endl;
+            cout << "Komentar : " << komentar << endl;
+            cout << "----------------" << endl;
+            cout << "Lanjut ke ulasan berikutnya?(y/n): " ;
+            char pil;
+            cin >> pil;
+            cout << endl;
+            if (pil != 'y' && pil != 'Y') break;
+        }
+        cout << "Sudah tidak ada ulasan lagi :>" << endl;
+        file.close();
+    }
+
+    void Admin::hitungPendapatanBulanan() {
+        loadRiwayatTransaksi();
+        if (jumlahData == 0) {
+            cout << "Tidak ada data transaksi yang tersedia." << endl;
+            return;
+        }
+        int bulanInput, tahunInput;
+        cout << "\n=== HITUNG PENDAPATAN BULANAN ===" << endl;
+        do {
+            cout << "Masukkan bulan (1-12): ";
+            cin >> bulanInput;
+            if (bulanInput < 1 || bulanInput > 12) {
+                cout << "Input tidak valid! Masukkan angka 1-12." << endl;
+            }
+        } while (bulanInput < 1 || bulanInput > 12);
+        cout << "Masukkan tahun (contoh: 2025): ";
+        cin >> tahunInput;
+        string namaBulan[] = {"Januari", "Februari", "Maret", "April", "Mei", "Juni",
+                            "Juli", "Agustus", "September", "Oktober", "November", "Desember"};
+        int totalPendapatan = 0;
+        int jumlahTransaksiSelesai = 0;
+        for (int i = 0; i < jumlahData; i++) {
+            if (riwayat[i].status == "Selesai") {
+                string detailTransaksi = riwayat[i].detailTransaksi;
+                size_t posTanggal = detailTransaksi.find("Tanggal        : ");
+                if (posTanggal != string::npos) {
+                    size_t posAwal = posTanggal + 17;
+                    size_t posAkhir = detailTransaksi.find("\n", posAwal);
+                    if (posAkhir != string::npos) {
+                        string tanggalRiwayat = detailTransaksi.substr(posAwal, posAkhir - posAwal);
+                        if (tanggalRiwayat.length() >= 10) {
+                            string tahunStr = tanggalRiwayat.substr(0, 4);
+                            string bulanStr = tanggalRiwayat.substr(5, 2);
+                            int tahunRiwayat = atoi(tahunStr.c_str());
+                            int bulanRiwayat = atoi(bulanStr.c_str());
+                            if (bulanRiwayat == bulanInput && tahunRiwayat == tahunInput) {
+                                size_t posTotalAkhir = detailTransaksi.rfind("TOTAL: Rp");
+                                if (posTotalAkhir != string::npos) {
+                                    size_t posAwalTotal = posTotalAkhir + 9;
+                                    size_t posAkhirTotal = detailTransaksi.find("\n", posAwalTotal);
+                                    if (posAkhirTotal == string::npos)
+                                        posAkhirTotal = detailTransaksi.length();
+                                    if (posAkhirTotal > posAwalTotal) {
+                                        string totalStr = detailTransaksi.substr(posAwalTotal, posAkhirTotal - posAwalTotal);
+                                        size_t awal = totalStr.find_first_not_of(" \t\r\n");
+                                        size_t akhir = totalStr.find_last_not_of(" \t\r\n");
+                                        if (awal != string::npos && akhir != string::npos) {
+                                            totalStr = totalStr.substr(awal, akhir - awal + 1);
+                                        }
+                                        int totalTransaksi = atoi(totalStr.c_str());
+                                        totalPendapatan += totalTransaksi;
+                                        jumlahTransaksiSelesai++;
                                     }
-                                    int totalTransaksi = atoi(totalStr.c_str());
-                                    totalPendapatan += totalTransaksi;
-                                    jumlahTransaksiSelesai++;
                                 }
                             }
                         }
@@ -3575,1589 +3576,173 @@ void Admin::hitungPendapatanBulanan() {
                 }
             }
         }
+        cout << "\n" << string(40, '=') << endl;
+        cout << "LAPORAN PENDAPATAN BULANAN" << endl;
+        cout << string(40, '=') << endl;
+        cout << "Bulan/Tahun             : " << namaBulan[bulanInput-1] << " " << tahunInput << endl;
+        cout << "Jumlah Transaksi Selesai: " << jumlahTransaksiSelesai << endl;
+        cout << "Pendapatan bulan ini    : Rp" << totalPendapatan << endl;
+        cout << string(40, '=') << endl;
+        if (jumlahTransaksiSelesai == 0) {
+            cout << "Tidak ada transaksi yang selesai pada bulan tersebut." << endl;
+        }
     }
-    cout << "\n" << string(40, '=') << endl;
-    cout << "LAPORAN PENDAPATAN BULANAN" << endl;
-    cout << string(40, '=') << endl;
-    cout << "Bulan/Tahun             : " << namaBulan[bulanInput-1] << " " << tahunInput << endl;
-    cout << "Jumlah Transaksi Selesai: " << jumlahTransaksiSelesai << endl;
-    cout << "Pendapatan bulan ini    : Rp" << totalPendapatan << endl;
-    cout << string(40, '=') << endl;
-    if (jumlahTransaksiSelesai == 0) {
-        cout << "Tidak ada transaksi yang selesai pada bulan tersebut." << endl;
+
+    void Admin::PengaturanAkun() {
+        pengaturanAkun(user, indeksAktif, jumlahPengguna);	
+        saveUsers();
     }
-}
 
-void Admin::PengaturanAkun() {
-    pengaturanAkun(user, indeksAktif, jumlahPengguna);	
-    saveUsers();
-}
+    void Admin::menuAdmin() {
+        while (true) {
 
-void Admin::menuAdmin() {
-    while (true) {
-
-        clearScreen();
-
-        tampilkanHeader("                           MENU ADMIN");
-
-        tampilkanDashboard();
-
-        cout << endl;
-
-        cout << " [1]  Pengaturan Akun\n";
-        cout << " [2]  Lihat Semua Riwayat Transaksi\n";
-        cout << " [3]  Cari Riwayat Transaksi\n";
-        cout << " [4]  Lihat Data Users\n";
-        cout << " [5]  Cari Data Users\n";
-        cout << " [6]  Update Status Laundry\n";
-        cout << " [7]  Pendapatan Bulanan\n";
-        cout << " [8]  Lihat Ulasan Customer\n";
-        cout << " [9]  Kelola Promo\n";
-        cout << " [10] Manajemen Pengeluaran\n";
-        cout << " [11] Fitur Khusus Admin\n";
-        cout << " [12] Dashboard Keuangan\n";
-
-        garisTengah();
-
-        cout << " [0] Logout\n";
-
-        garisBawah();
-
-        int pilihan;
-        cout << "Pilih Menu : ";
-        cin >> pilihan;
-
-        if (pilihan == 1) {
             clearScreen();
-            pengaturanAkun(user, indeksAktif, jumlahPengguna);
-            saveUsers();
 
-        } else if (pilihan == 2) {
-            clearScreen();
-            tampilkanHeader("RIWAYAT TRANSAKSI");
-            bacaRiwayatLayanan();
+            tampilkanHeader("                           MENU ADMIN");
 
-        } else if (pilihan == 3) {
-            clearScreen();
-            menuCariRiwayat();
-
-        } else if (pilihan == 4) {
-            clearScreen();
-            dataUser();
-
-        } else if (pilihan == 5) {
-            string keyword;
-            cout << "Masukkan Username : ";
-            cin.ignore();
-            getline(cin, keyword);
-            cariUserLinear(keyword);
-
-        } else if (pilihan == 6) {
-            clearScreen();
-            updateStatus();
-
-        } else if (pilihan == 7) {
-            clearScreen();
-            hitungPendapatanBulanan();
-
-        } else if (pilihan == 8) {
-            clearScreen();
-            tampilkanHeader("ULASAN CUSTOMER");
-            ulasanRating();
-
-        } else if (pilihan == 9) {
-            clearScreen();
-            menuPromo();
-
-        } else if (pilihan == 10) {
-            clearScreen();
-            pengeluaran.menuPengeluaran();
-
-        } else if (pilihan == 11) {
-            clearScreen();
-            tampilkanHeader("FITUR KHUSUS ADMIN");
+            tampilkanDashboard();
 
             cout << endl;
-            cout << " [1] Layanan Terlaris\n";
-            cout << " [2] Manajemen Stok\n";
+
+            cout << " [1]  Pengaturan Akun\n";
+            cout << " [2]  Lihat Semua Riwayat Transaksi\n";
+            cout << " [3]  Cari Riwayat Transaksi\n";
+            cout << " [4]  Lihat Data Users\n";
+            cout << " [5]  Cari Data Users\n";
+            cout << " [6]  Update Status Laundry\n";
+            cout << " [7]  Pendapatan Bulanan\n";
+            cout << " [8]  Lihat Ulasan Customer\n";
+            cout << " [9]  Kelola Promo\n";
+            cout << " [10] Manajemen Pengeluaran\n";
+            cout << " [11] Fitur Khusus Admin\n";
+            cout << " [12] Dashboard Keuangan\n";
 
             garisTengah();
 
-            cout << " [0] Kembali\n\n";
+            cout << " [0] Logout\n";
 
-            int sub;
-            cout << "Pilih : ";
-            cin >> sub;
+            garisBawah();
 
-            switch(sub)
-            {
-                case 1:
-                    clearScreen();
-                    menuLayananTerlaris();
-                    break;
+            int pilihan;
+            cout << "Pilih Menu : ";
+            cin >> pilihan;
 
-                case 2:
-                    clearScreen();
-                    menuStok();
-                    break;
-
-                case 0:
-                    break;
-
-                default:
-                    cout << "\nPilihan tidak valid.\n";
-            }
-
-        } else if (pilihan == 12) {
-            clearScreen();
-            dashboardKeuangan();
-
-        } else if (pilihan == 0) {
-            cout << "\nLogout berhasil. Terima kasih.\n";
-            pauseScreen();
-            clearScreen();
-            break;
-
-        } else {
-            cout << "\nPilihan tidak valid!\n";
-        }
-
-        pauseScreen();
-        clearScreen();
-    }
-}
-
-void Admin::menuStok()
-{
-    int pilih;
-
-    do
-    {
-        clearScreen();
-
-        tampilkanHeader("MANAJEMEN STOK");
-
-        cout << endl;
-        cout << " [1] Lihat Stok\n";
-        cout << " [2] Tambah Stok\n";
-        cout << " [3] Kurangi Stok\n";
-        cout << " [4] Edit Data\n";
-        cout << " [5] Cari Barang\n";
-
-        garisTengah();
-
-        cout << " [0] Kembali\n";
-
-        garisBawah();
-
-        cout << "Pilih : ";
-        cin >> pilih;
-
-        switch(pilih)
-        {
-            case 1:
+            if (pilihan == 1) {
                 clearScreen();
-                lihatStok();
-                pauseScreen();
-                break;
+                pengaturanAkun(user, indeksAktif, jumlahPengguna);
+                saveUsers();
 
-            case 2:
+            } else if (pilihan == 2) {
                 clearScreen();
-                tambahStok();
-                pauseScreen();
-                break;
+                tampilkanHeader("RIWAYAT TRANSAKSI");
+                bacaRiwayatLayanan();
 
-            case 3:
+            } else if (pilihan == 3) {
                 clearScreen();
-                kurangiStok();
-                pauseScreen();
-                break;
+                menuCariRiwayat();
 
-            case 4:
+            } else if (pilihan == 4) {
                 clearScreen();
-                editStok();
-                pauseScreen();
-                break;
-
-            case 5:
-                clearScreen();
-                cariStok();
-                pauseScreen();
-                break;
-
-            case 0:
-                break;
-
-            default:
-                cout << "\nPilihan tidak valid.\n";
-                pauseScreen();
-        }
-
-    } while(pilih != 0);
-}
-
-void Admin::loadStok()
-{
-    ifstream file("stok.txt");
-
-    jumlahBahan = 0;
-
-    if(!file.is_open())
-    {
-        return;
-    }
-
-    while(getline(file, bahan[jumlahBahan].idBahan, '|'))
-    {
-        getline(file, bahan[jumlahBahan].namaBahan, '|');
-
-        file >> bahan[jumlahBahan].stok;
-        file.ignore();
-
-        getline(file, bahan[jumlahBahan].satuan, '|');
-
-        file >> bahan[jumlahBahan].hargaPerUnit;
-        file.ignore();
-
-        getline(file, bahan[jumlahBahan].tanggalKadaluarsa, '|');
-        getline(file, bahan[jumlahBahan].supplier, '|');
-
-        file >> bahan[jumlahBahan].minimalStok;
-        file.ignore();
-
-        jumlahBahan++;
-
-        if(jumlahBahan >= 100)
-        {
-            break;
-        }
-    }
-
-    file.close();
-}
-
-void Admin::saveStok()
-{
-    ofstream file("stok.txt");
-
-    if(!file.is_open())
-    {
-        cout << "\nGagal menyimpan data stok.\n";
-        return;
-    }
-
-    for(int i = 0; i < jumlahBahan; i++)
-    {
-        file
-        << bahan[i].idBahan << "|"
-        << bahan[i].namaBahan << "|"
-        << bahan[i].stok << "|"
-        << bahan[i].satuan << "|"
-        << bahan[i].hargaPerUnit << "|"
-        << bahan[i].tanggalKadaluarsa << "|"
-        << bahan[i].supplier << "|"
-        << bahan[i].minimalStok
-        << endl;
-    }
-
-    file.close();
-}
-
-void Admin::lihatStok()
-{
-    loadStok();
-
-    tampilkanHeader("DATA STOK");
-
-    if (jumlahBahan == 0)
-    {
-        cout << "\nBelum ada data stok.\n";
-        return;
-    }
-
-    cout << left
-         << setw(5)  << "No"
-         << setw(12) << "ID"
-         << setw(20) << "Nama"
-         << setw(10) << "Stok"
-         << setw(12) << "Satuan"
-         << setw(20) << "Supplier"
-         << endl;
-
-    garisTengah();
-
-    for (int i = 0; i < jumlahBahan; i++)
-    {
-        cout << left
-             << setw(5)  << i + 1
-             << setw(12) << bahan[i].idBahan
-             << setw(20) << bahan[i].namaBahan
-             << setw(10) << bahan[i].stok
-             << setw(12) << bahan[i].satuan
-             << setw(20) << bahan[i].supplier
-             << endl;
-    }
-
-    garisBawah();
-}
-
-void Admin::tambahStok()
-{
-    loadStok();
-
-    if (jumlahBahan >= 100)
-    {
-        cout << "\nData stok sudah penuh!\n";
-        return;
-    }
-
-    tampilkanHeader("TAMBAH STOK");
-
-    cin.ignore();
-
-    cout << "ID Bahan               : ";
-    getline(cin, bahan[jumlahBahan].idBahan);
-
-    cout << "Nama Bahan             : ";
-    getline(cin, bahan[jumlahBahan].namaBahan);
-
-    cout << "Jumlah Stok            : ";
-    cin >> bahan[jumlahBahan].stok;
-    cin.ignore();
-
-    cout << "Satuan                 : ";
-    getline(cin, bahan[jumlahBahan].satuan);
-
-    cout << "Harga Per Unit         : ";
-    cin >> bahan[jumlahBahan].hargaPerUnit;
-    cin.ignore();
-
-    cout << "Tanggal Kadaluarsa     : ";
-    getline(cin, bahan[jumlahBahan].tanggalKadaluarsa);
-
-    cout << "Supplier               : ";
-    getline(cin, bahan[jumlahBahan].supplier);
-
-    cout << "Minimal Stok           : ";
-    cin >> bahan[jumlahBahan].minimalStok;
-
-    jumlahBahan++;
-
-    saveStok();
-
-    cout << "\nData stok berhasil ditambahkan.\n";
-}
-
-
-void Admin::editStok()
-{
-    loadStok();
-
-    if (jumlahBahan == 0)
-    {
-        cout << "\nBelum ada data stok.\n";
-        return;
-    }
-
-    string id;
-
-    cin.ignore();
-
-    cout << "Masukkan ID Bahan yang akan diedit : ";
-    getline(cin, id);
-
-    bool ditemukan = false;
-
-    for (int i = 0; i < jumlahBahan; i++)
-    {
-        if (bahan[i].idBahan == id)
-        {
-            ditemukan = true;
-
-            tampilkanHeader("EDIT STOK");
-
-            cout << "\nData Lama\n";
-            cout << "ID                : " << bahan[i].idBahan << endl;
-            cout << "Nama              : " << bahan[i].namaBahan << endl;
-            cout << "Jumlah Stok       : " << bahan[i].stok << endl;
-            cout << "Satuan            : " << bahan[i].satuan << endl;
-            cout << "Harga             : " << bahan[i].hargaPerUnit << endl;
-            cout << "Kadaluarsa        : " << bahan[i].tanggalKadaluarsa << endl;
-            cout << "Supplier          : " << bahan[i].supplier << endl;
-            cout << "Minimal Stok      : " << bahan[i].minimalStok << endl;
-
-            cout << "\nMasukkan Data Baru\n";
-
-            cout << "Nama Bahan             : ";
-            getline(cin, bahan[i].namaBahan);
-
-            cout << "Jumlah Stok            : ";
-            cin >> bahan[i].stok;
-            cin.ignore();
-
-            cout << "Satuan                 : ";
-            getline(cin, bahan[i].satuan);
-
-            cout << "Harga Per Unit         : ";
-            cin >> bahan[i].hargaPerUnit;
-            cin.ignore();
-
-            cout << "Tanggal Kadaluarsa     : ";
-            getline(cin, bahan[i].tanggalKadaluarsa);
-
-            cout << "Supplier               : ";
-            getline(cin, bahan[i].supplier);
-
-            cout << "Minimal Stok           : ";
-            cin >> bahan[i].minimalStok;
-
-            saveStok();
-
-            cout << "\nData berhasil diperbarui.\n";
-
-            break;
-        }
-    }
-
-    if (!ditemukan)
-    {
-        cout << "\nID Bahan tidak ditemukan.\n";
-    }
-}
-
-void Admin::kurangiStok()
-{
-    loadStok();
-
-    if (jumlahBahan == 0)
-    {
-        cout << "\nBelum ada data stok.\n";
-        return;
-    }
-
-    string id;
-    double jumlahKurang;
-
-    cin.ignore();
-
-    cout << "Masukkan ID Bahan : ";
-    getline(cin, id);
-
-    bool ditemukan = false;
-
-    for (int i = 0; i < jumlahBahan; i++)
-    {
-        if (bahan[i].idBahan == id)
-        {
-            ditemukan = true;
-
-            cout << "Nama Bahan : " << bahan[i].namaBahan << endl;
-            cout << "Stok Saat Ini : " << bahan[i].stok << " " << bahan[i].satuan << endl;
-
-            cout << "Jumlah yang digunakan : ";
-            cin >> jumlahKurang;
-
-            if (jumlahKurang > bahan[i].stok)
-            {
-                cout << "\nStok tidak mencukupi!\n";
-                return;
-            }
-
-            bahan[i].stok -= jumlahKurang;
-
-            saveStok();
-
-            cout << "\nStok berhasil dikurangi.\n";
-            return;
-        }
-    }
-
-    if (!ditemukan)
-    {
-        cout << "\nID Bahan tidak ditemukan.\n";
-    }
-}
-
-void Admin::cariStok()
-{
-    loadStok();
-
-    if (jumlahBahan == 0)
-    {
-        cout << "\nBelum ada data stok.\n";
-        return;
-    }
-
-    string keyword;
-
-    cin.ignore();
-
-    cout << "Masukkan ID atau Nama Bahan : ";
-    getline(cin, keyword);
-
-    bool ditemukan = false;
-
-    tampilkanHeader("HASIL PENCARIAN STOK");
-
-    cout << left
-         << setw(5)  << "No"
-         << setw(12) << "ID"
-         << setw(20) << "Nama"
-         << setw(10) << "Stok"
-         << setw(12) << "Satuan"
-         << setw(20) << "Supplier"
-         << endl;
-
-    garisTengah();
-
-    for(int i = 0; i < jumlahBahan; i++)
-    {
-        string id = toLowerCase(bahan[i].idBahan);
-        string nama = toLowerCase(bahan[i].namaBahan);
-        string cari = toLowerCase(keyword);
-
-        if(id.find(cari) != string::npos ||
-           nama.find(cari) != string::npos)
-        {
-            ditemukan = true;
-
-            cout << left
-                 << setw(5)  << i + 1
-                 << setw(12) << bahan[i].idBahan
-                 << setw(20) << bahan[i].namaBahan
-                 << setw(10) << bahan[i].stok
-                 << setw(12) << bahan[i].satuan
-                 << setw(20) << bahan[i].supplier
-                 << endl;
-        }
-    }
-
-    if(!ditemukan)
-    {
-        cout << "\nData tidak ditemukan.\n";
-    }
-
-    garisBawah();
-}
-
-
-
-void LaundrySystem::tampilkanHeader() {
-    cout << "" << string(50, '=') << endl;
-    cout << "       SISTEM MANAJEMEN LAUNDRY AMBA" << endl;
-    cout << "          Solusi Terpercaya Untuk" << endl;
-    cout << "          Kebutuhan Laundry Anda" << endl;
-    cout << string(50, '=') << endl;
-}
-
-void LaundrySystem::tampilkanMenuUtama() {
-    cout << "\n" << string(40, '-') << endl;
-    cout << left << setw(13) << "" << "MENU UTAMA";
-    cout << "\n" << string(40, '-') << endl;
-    cout << "1. Login" << endl;
-    cout << "2. Registrasi" << endl;
-    cout << "0. Keluar" << endl << endl;
-    cout << "Pilih: ";
-}
-
-void LaundrySystem::prosesMenuUtama() {
-    int pilihan;
-    customer.loadUsers();
-
-    admin.jumlahPengguna = customer.jumlahPengguna;
-    int i;
-    for (i = 0; i < customer.jumlahPengguna; ++i) {
-        admin.user[i] = customer.user[i];
-    }
-    while(true) {
-    	tampilkanHeader();
-        tampilkanMenuUtama();
-        cin >> pilihan;
-        if(pilihan == 1) {
-        	clearScreen();
-            customer.indeksAktif = customer.login(role);
-            if(customer.indeksAktif != -1) {
-                cout << "Login berhasil sebagai " << role << ".\n\n";
-                if(role == "customer") {
-                	pauseScreen();
-                	clearScreen();
-                    customer.prosesMenuCustomer();
-                } else if(role == "admin") {
-                    admin.indeksAktif = customer.indeksAktif;
-                    pauseScreen();
-                	clearScreen();
-                    admin.menuAdmin();
-                }
-            }
-        } else if(pilihan == 2) {
-            customer.registrasiPengguna();
-            customer.saveUsers();
-        } else if(pilihan == 0) {
-            cout << "Terima kasih. Program selesai.\n";
-            break;
-        } else {
-            cout << "Pilihan tidak valid.\n";
-        }
-    }
-}
-
-void ManajemenPengeluaran::menuPengeluaran() {
-    loadPengeluaran();
-    int pilihan;
-
-    do
-    {
-        clearScreen();
-
-        cout << "\n=============================================\n";
-        cout << "         MANAJEMEN PENGELUARAN\n";
-        cout << "=============================================\n";
-        cout << "1. Tambah Pengeluaran\n";
-        cout << "2. Lihat Semua Pengeluaran\n";
-        cout << "3. Cari Pengeluaran\n";
-        cout << "4. Edit Pengeluaran\n";
-        cout << "5. Hapus Pengeluaran\n";
-        cout << "6. Laporan Harian\n";
-        cout << "7. Laporan Mingguan\n";
-        cout << "8. Laporan Bulanan\n";
-        cout << "9. Total Pengeluaran\n";
-        cout << "0. Kembali\n";
-        cout << "=============================================\n";
-        cout << "Pilihan : ";
-        cin >> pilihan;
-
-        switch(pilihan)
-        {
-            case 1:{
-                clearScreen();
-                tambahPengeluaran();
-                break;
-            }
-                
-
-            case 2:{
-                clearScreen();
-                lihatPengeluaran();
-                break;
-            }
-                
-
-            case 3:{
-                clearScreen();
-                cariPengeluaran();
-                break;
-            }
-                
-
-            case 4:{
-                clearScreen();
-                editPengeluaran();
-                break;
-            }
-                
-
-            case 5:{
-                clearScreen();
-                hapusPengeluaran();
-                break;
-            }
-                
-
-            case 6:
-            {
-                clearScreen();
-                laporanHarian();
-                break;
-            }
-
-            case 7:
-            {
-                clearScreen();
-                laporanMingguan();
-                break;
-            }
-
-            case 8:
-            {
-                clearScreen();
-                laporanBulanan();
-                break;
-            }
-
-            case 9:
-            {
-                clearScreen();
-
-                cout << "=========================================\n";
-                cout << "         TOTAL PENGELUARAN\n";
-                cout << "=========================================\n";
-
-                cout << "Total Pengeluaran : Rp "
-                    << fixed << setprecision(0)
-                    << totalPengeluaran() << endl;
-
-                cout << "=========================================\n";
-
-                pauseScreen();
-                break;
-            }
-
-            case 0:
-                return;
-
-            default:
-                cout << "Pilihan tidak valid!" << endl;
-                pauseScreen();
-        }
-
-    } while (pilihan != 0);
-}
-
-void ManajemenPengeluaran::tambahPengeluaran()
-{
-    clearScreen();
-
-    cout << "=============================================\n";
-    cout << "          TAMBAH PENGELUARAN\n";
-    cout << "=============================================\n";
-
-    if (jumlahData >= MAX_PENGELUARAN)
-    {
-        cout << "Data pengeluaran sudah penuh!\n";
-        pauseScreen();
-        return;
-    }
-
-    Pengeluaran p;
-
-    // ID otomatis
-    stringstream ss;
-    ss << "PGL" << setw(3) << setfill('0') << jumlahData + 1;
-    p.idPengeluaran = ss.str();
-
-    cout << "ID Pengeluaran : " << p.idPengeluaran << endl;
-
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-    cout << "Tanggal (yyyy-mm-dd) : ";
-    getline(cin, p.tanggal);
-
-    cout << "\nKategori\n";
-    cout << "1. Bahan Laundry\n";
-    cout << "2. Operasional\n";
-    cout << "3. Gaji Pegawai\n";
-    cout << "4. Maintenance\n";
-    cout << "5. Transportasi\n";
-    cout << "6. Lain-lain\n";
-
-    int pilihKategori;
-
-    do
-    {
-        cout << "Pilih : ";
-        cin >> pilihKategori;
-
-    }while(pilihKategori < 1 || pilihKategori > 6);
-
-    switch(pilihKategori)
-    {
-        case 1: p.kategori = "Bahan Laundry"; break;
-        case 2: p.kategori = "Operasional"; break;
-        case 3: p.kategori = "Gaji Pegawai"; break;
-        case 4: p.kategori = "Maintenance"; break;
-        case 5: p.kategori = "Transportasi"; break;
-        case 6: p.kategori = "Lain-lain"; break;
-    }
-
-    cin.ignore();
-
-    cout << "Nama Barang        : ";
-    getline(cin,p.namaBarang);
-
-    cout << "Jumlah             : ";
-    cin >> p.jumlah;
-
-    cout << "Harga Satuan       : ";
-    cin >> p.hargaSatuan;
-
-    cin.ignore();
-
-    cout << "Keterangan         : ";
-    getline(cin,p.keterangan);
-
-    p.totalPengeluaran = p.jumlah * p.hargaSatuan;
-
-    data[jumlahData] = p;
-
-    jumlahData++;
-
-    savePengeluaran();
-
-    cout << "\n=====================================\n";
-    cout << "Pengeluaran berhasil ditambahkan.\n";
-    cout << "Total : Rp " << fixed << setprecision(0)
-         << p.totalPengeluaran << endl;
-    cout << "=====================================\n";
-
-    pauseScreen();
-}
-
-void ManajemenPengeluaran::savePengeluaran()
-{
-    ofstream file("pengeluaran.txt");
-
-    if(!file.is_open())
-        return;
-
-    for(int i = 0; i < jumlahData; i++)
-    {
-        file << data[i].idPengeluaran << "|"
-             << data[i].tanggal << "|"
-             << data[i].kategori << "|"
-             << data[i].namaBarang << "|"
-             << data[i].jumlah << "|"
-             << data[i].hargaSatuan << "|"
-             << data[i].totalPengeluaran << "|"
-             << data[i].keterangan << endl;
-    }
-
-    file.close();
-}
-
-void ManajemenPengeluaran::loadPengeluaran()
-{
-    ifstream file("pengeluaran.txt");
-
-    if(!file.is_open())
-    {
-        jumlahData = 0;
-        return;
-    }
-
-    jumlahData = 0;
-
-    string baris;
-
-    while(getline(file, baris))
-    {
-        stringstream ss(baris);
-        string temp;
-
-        getline(ss, data[jumlahData].idPengeluaran, '|');
-        getline(ss, data[jumlahData].tanggal, '|');
-        getline(ss, data[jumlahData].kategori, '|');
-        getline(ss, data[jumlahData].namaBarang, '|');
-
-        getline(ss, temp, '|');
-        data[jumlahData].jumlah = atoi(temp.c_str());
-
-        getline(ss, temp, '|');
-        data[jumlahData].hargaSatuan = atof(temp.c_str());
-
-        getline(ss, temp, '|');
-        data[jumlahData].totalPengeluaran = atof(temp.c_str());
-
-        getline(ss, data[jumlahData].keterangan);
-
-        jumlahData++;
-
-        if(jumlahData >= MAX_PENGELUARAN)
-            break;
-    }
-
-    file.close();
-}
-
-
-    void ManajemenPengeluaran::lihatPengeluaran() {
-        loadPengeluaran();
-
-        if (jumlahData == 0)
-        {
-            cout << "\nBelum ada data pengeluaran.\n";
-            return;
-        }
-
-        cout << "\n";
-        cout << "===============================================================================================================\n";
-        cout << "                                      DAFTAR PENGELUARAN LAUNDRY\n";
-        cout << "===============================================================================================================\n";
-        cout << left
-            << setw(5)  << "No"
-            << setw(10) << "ID"
-            << setw(15) << "Tanggal"
-            << setw(18) << "Kategori"
-            << setw(28) << "Nama Barang"
-            << setw(8)  << "Qty"
-            << setw(15) << "Harga"
-            << setw(15) << "Total"
-            << endl;
-
-        cout << string(111,'=') << endl;
-
-        for(int i = 0; i < jumlahData; i++)
-        {
-            cout << left
-			     << setw(5)  << i + 1
-			     << setw(10) << data[i].idPengeluaran
-			     << setw(15) << data[i].tanggal
-			     << setw(18) << data[i].kategori
-			     << setw(28) << data[i].namaBarang
-			     << setw(8)  << data[i].jumlah
-			     << "Rp " << setw(12) << fixed << setprecision(0) << data[i].hargaSatuan
-			     << "Rp " << setw(12) << fixed << setprecision(0) << data[i].totalPengeluaran
-			     << endl;
-        }
-
-        cout << string(111,'=') << endl;
-
-        int pilih;
-
-        cout << "\nLihat detail nomor (0 = kembali) : ";
-        cin >> pilih;
-
-        if(pilih >= 1 && pilih <= jumlahData)
-        {
-            Pengeluaran p = data[pilih - 1];
-
-            clearScreen();
-
-            cout << "====================================================\n";
-            cout << "              DETAIL PENGELUARAN\n";
-            cout << "====================================================\n";
-
-            cout << left << setw(20) << "ID Pengeluaran" << ": " << p.idPengeluaran << endl;
-            cout << left << setw(20) << "Tanggal"        << ": " << p.tanggal << endl;
-            cout << left << setw(20) << "Kategori"       << ": " << p.kategori << endl;
-            cout << left << setw(20) << "Nama Barang"    << ": " << p.namaBarang << endl;
-            cout << left << setw(20) << "Jumlah"         << ": " << p.jumlah << endl;
-            cout << left << setw(20) << "Harga Satuan"   << ": Rp " << fixed << setprecision(0) << p.hargaSatuan << endl;
-            cout << left << setw(20) << "Total"          << ": Rp " << fixed << setprecision(0) << p.totalPengeluaran << endl;
-            cout << left << setw(20) << "Keterangan"     << ": " << p.keterangan << endl;
-
-            cout << "====================================================\n";
-
-            pauseScreen();
-        } else if(pilih != 0)
-        {
-            cout << "\nNomor pengeluaran tidak valid!\n";
-            pauseScreen();
-        }
-    }
-
-    void ManajemenPengeluaran::editPengeluaran()
-    {
-        loadPengeluaran();
-
-        if (jumlahData == 0)
-        {
-            cout << "\nBelum ada data pengeluaran.\n";
-            return;
-        }
-
-        string id;
-
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-        cout << "\n=====================================\n";
-        cout << "        EDIT PENGELUARAN\n";
-        cout << "=====================================\n";
-
-        cout << "Masukkan ID Pengeluaran : ";
-        getline(cin, id);
-
-        bool ditemukan = false;
-
-        for (int i = 0; i < jumlahData; i++)
-        {
-            if (data[i].idPengeluaran == id)
-            {
-                ditemukan = true;
-
-                cout << "\nData ditemukan!\n";
-
-                cout << "Kategori lama      : " << data[i].kategori << endl;
-                cout << "Nama Barang lama   : " << data[i].namaBarang << endl;
-                cout << "Jumlah lama        : " << data[i].jumlah << endl;
-                cout << "Harga lama         : " << data[i].hargaSatuan << endl;
-                cout << "Keterangan lama    : " << data[i].keterangan << endl;
-
-                cout << "\n===== Masukkan Data Baru =====\n";
-
-                cout << "Kategori : ";
-                getline(cin, data[i].kategori);
-
-                cout << "Nama Barang : ";
-                getline(cin, data[i].namaBarang);
-
-                cout << "Jumlah : ";
-                cin >> data[i].jumlah;
-
-                cout << "Harga Satuan : ";
-                cin >> data[i].hargaSatuan;
-
+                dataUser();
+
+            } else if (pilihan == 5) {
+                string keyword;
+                cout << "Masukkan Username : ";
                 cin.ignore();
+                getline(cin, keyword);
+                cariUserLinear(keyword);
 
-                cout << "Keterangan : ";
-                getline(cin, data[i].keterangan);
+            } else if (pilihan == 6) {
+                clearScreen();
+                updateStatus();
 
-                data[i].totalPengeluaran =
-                    data[i].jumlah * data[i].hargaSatuan;
+            } else if (pilihan == 7) {
+                clearScreen();
+                hitungPendapatanBulanan();
 
-                savePengeluaran();
+            } else if (pilihan == 8) {
+                clearScreen();
+                tampilkanHeader("ULASAN CUSTOMER");
+                ulasanRating();
 
-                cout << "\nData berhasil diperbarui.\n";
+            } else if (pilihan == 9) {
+                clearScreen();
+                menuPromo();
 
-                break;
-            }
-        }
+            } else if (pilihan == 10) {
+                clearScreen();
+                pengeluaran.menuPengeluaran();
 
-        if (!ditemukan)
-        {
-            cout << "\nID Pengeluaran tidak ditemukan.\n";
-        }
-    }
+            } else if (pilihan == 11) {
+                clearScreen();
+                tampilkanHeader("FITUR KHUSUS ADMIN");
 
-    void ManajemenPengeluaran::hapusPengeluaran(){
-        loadPengeluaran();
+                cout << endl;
+                cout << " [1] Layanan Terlaris\n";
+                cout << " [2] Manajemen Stok\n";
 
-        if (jumlahData == 0)
-        {
-            cout << "\nBelum ada data pengeluaran.\n";
-            return;
-        }
+                garisTengah();
 
-        string id;
+                cout << " [0] Kembali\n\n";
 
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                int sub;
+                cout << "Pilih : ";
+                cin >> sub;
 
-        cout << "\n=====================================\n";
-        cout << "       HAPUS PENGELUARAN\n";
-        cout << "=====================================\n";
-
-        cout << "Masukkan ID Pengeluaran : ";
-        getline(cin, id);
-
-        bool ditemukan = false;
-
-        for (int i = 0; i < jumlahData; i++)
-        {
-            if (data[i].idPengeluaran == id)
-            {
-                ditemukan = true;
-
-                cout << "\nData yang akan dihapus\n";
-                cout << "ID           : " << data[i].idPengeluaran << endl;
-                cout << "Tanggal      : " << data[i].tanggal << endl;
-                cout << "Kategori     : " << data[i].kategori << endl;
-                cout << "Nama Barang  : " << data[i].namaBarang << endl;
-                cout << "Total        : Rp " << data[i].totalPengeluaran << endl;
-
-                char konfirmasi;
-
-                cout << "\nYakin ingin menghapus? (Y/T) : ";
-                cin >> konfirmasi;
-
-                if (konfirmasi == 'Y' || konfirmasi == 'y')
+                switch(sub)
                 {
-                    for (int j = i; j < jumlahData - 1; j++)
-                    {
-                        data[j] = data[j + 1];
-                    }
+                    case 1:
+                        clearScreen();
+                        menuLayananTerlaris();
+                        break;
 
-                    jumlahData--;
+                    case 2:
+                        clearScreen();
+                        menuStok();
+                        break;
 
-                    savePengeluaran();
+                    case 0:
+                        break;
 
-                    cout << "\nData berhasil dihapus.\n";
-                }
-                else
-                {
-                    cout << "\nPenghapusan dibatalkan.\n";
+                    default:
+                        cout << "\nPilihan tidak valid.\n";
                 }
 
+            } else if (pilihan == 12) {
+                clearScreen();
+                dashboardKeuangan();
+
+            } else if (pilihan == 0) {
+                cout << "\nLogout berhasil. Terima kasih.\n";
+                pauseScreen();
+                clearScreen();
                 break;
+
+            } else {
+                cout << "\nPilihan tidak valid!\n";
             }
-        }
 
-        if (!ditemukan)
-        {
-            cout << "\nID tidak ditemukan.\n";
-        }
-    }
-
-    void ManajemenPengeluaran::cariPengeluaran() {
-        loadPengeluaran();
-
-        if (jumlahData == 0)
-        {
-            cout << "\nBelum ada data pengeluaran.\n";
-            return;
-        }
-
-        string keyword;
-
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-        cout << "\n=====================================\n";
-        cout << "        CARI PENGELUARAN\n";
-        cout << "=====================================\n";
-
-        cout << "Masukkan ID / Nama Barang / Kategori : ";
-        getline(cin, keyword);
-
-        bool ditemukan = false;
-
-        for (int i = 0; i < jumlahData; i++)
-        {
-            if (data[i].idPengeluaran == keyword ||
-                data[i].namaBarang == keyword ||
-                data[i].kategori == keyword)
-            {
-                ditemukan = true;
-
-                cout << "\n=====================================\n";
-                cout << "ID             : " << data[i].idPengeluaran << endl;
-                cout << "Tanggal        : " << data[i].tanggal << endl;
-                cout << "Kategori       : " << data[i].kategori << endl;
-                cout << "Nama Barang    : " << data[i].namaBarang << endl;
-                cout << "Jumlah         : " << data[i].jumlah << endl;
-                cout << "Harga Satuan   : Rp " << data[i].hargaSatuan << endl;
-                cout << "Total          : Rp " << data[i].totalPengeluaran << endl;
-                cout << "Keterangan     : " << data[i].keterangan << endl;
-                cout << "=====================================\n";
-            }
-        }
-
-        if (!ditemukan)
-        {
-            cout << "\nData tidak ditemukan.\n";
-        }
-    }
-
-    void ManajemenPengeluaran::laporanHarian(){
-        loadPengeluaran();
-
-        if (jumlahData == 0)
-        {
-            cout << "\nBelum ada data pengeluaran.\n";
-            return;
-        }
-
-        string tanggal;
-        double total = 0;
-        bool ditemukan = false;
-
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-        cout << "=============================================\n";
-        cout << "          LAPORAN HARIAN\n";
-        cout << "=============================================\n";
-
-        cout << "Masukkan tanggal (yyyy-mm-dd) : ";
-        getline(cin, tanggal);
-
-        cout << "\n=========================================================================================================\n";
-        cout << left
-            << setw(12) << "ID"
-            << setw(15) << "Tanggal"
-            << setw(20) << "Kategori"
-            << setw(20) << "Barang"
-            << setw(15) << "Total";
-        cout << endl;
-
-        cout << "=========================================================================================================\n";
-
-        for (int i = 0; i < jumlahData; i++)
-        {
-            if (data[i].tanggal == tanggal)
-            {
-                ditemukan = true;
-
-                cout << left
-                    << setw(12) << data[i].idPengeluaran
-                    << setw(15) << data[i].tanggal
-                    << setw(20) << data[i].kategori
-                    << setw(20) << data[i].namaBarang
-                    << setw(15) << fixed << setprecision(0)
-                    << data[i].totalPengeluaran
-                    << endl;
-
-                total += data[i].totalPengeluaran;
-            }
-        }
-
-        cout << "=========================================================================================================\n";
-
-        if (ditemukan)
-        {
-            cout << "\nTotal Pengeluaran Hari Ini : Rp "
-                << fixed << setprecision(0)
-                << total << endl;
-        }
-        else
-        {
-            cout << "\nTidak ada pengeluaran pada tanggal tersebut.\n";
-        }
-
-        pauseScreen();
-    }
-
-    void ManajemenPengeluaran::laporanMingguan(){
-        loadPengeluaran();
-
-        if (jumlahData == 0)
-        {
-            cout << "\nBelum ada data pengeluaran.\n";
-            return;
-        }
-
-        string tanggalAwal, tanggalAkhir;
-        double total = 0;
-        bool ditemukan = false;
-
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-        cout << "=============================================\n";
-        cout << "         LAPORAN MINGGUAN\n";
-        cout << "=============================================\n";
-
-        cout << "Masukkan Tanggal Awal (yyyy-mm-dd) : ";
-        getline(cin, tanggalAwal);
-
-        cout << "Masukkan Tanggal Akhir (yyyy-mm-dd) : ";
-        getline(cin, tanggalAkhir);
-
-        cout << "\n====================================================================================================\n";
-        cout << left
-            << setw(12) << "ID"
-            << setw(15) << "Tanggal"
-            << setw(20) << "Kategori"
-            << setw(20) << "Barang"
-            << setw(15) << "Total";
-        cout << endl;
-
-        cout << "====================================================================================================\n";
-
-        for (int i = 0; i < jumlahData; i++)
-        {
-            if (data[i].tanggal >= tanggalAwal &&
-                data[i].tanggal <= tanggalAkhir)
-            {
-                ditemukan = true;
-
-                cout << left
-                    << setw(12) << data[i].idPengeluaran
-                    << setw(15) << data[i].tanggal
-                    << setw(20) << data[i].kategori
-                    << setw(20) << data[i].namaBarang
-                    << setw(15) << fixed << setprecision(0)
-                    << data[i].totalPengeluaran
-                    << endl;
-
-                total += data[i].totalPengeluaran;
-            }
-        }
-
-        cout << "====================================================================================================\n";
-
-        if (ditemukan)
-        {
-            cout << "\nTotal Pengeluaran : Rp "
-                << fixed << setprecision(0)
-                << total << endl;
-        }
-        else
-        {
-            cout << "\nTidak ada data pada rentang tanggal tersebut.\n";
-        }
-
-        pauseScreen();
-    }
-
-
-
-    void ManajemenPengeluaran::laporanBulanan(){
-        loadPengeluaran();
-
-        if (jumlahData == 0)
-        {
-            cout << "\nBelum ada data pengeluaran.\n";
             pauseScreen();
-            return;
-        }
-
-        string bulan;
-        double total = 0;
-        int jumlah = 0;
-
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-        cout << "=========================================\n";
-        cout << "        LAPORAN BULANAN\n";
-        cout << "=========================================\n";
-
-        cout << "Masukkan bulan (yyyy-mm): ";
-        getline(cin, bulan);
-
-        cout << "\n";
-        cout << left
-            << setw(12) << "ID"
-            << setw(15) << "Tanggal"
-            << setw(20) << "Kategori"
-            << setw(20) << "Barang"
-            << setw(15) << "Total" << endl;
-
-        cout << string(82,'-') << endl;
-
-        bool ditemukan = false;
-
-        for(int i = 0; i < jumlahData; i++)
-        {
-            if(data[i].tanggal.substr(0,7) == bulan)
-            {
-                ditemukan = true;
-
-                cout << left
-                    << setw(12) << data[i].idPengeluaran
-                    << setw(15) << data[i].tanggal
-                    << setw(20) << data[i].kategori
-                    << setw(20) << data[i].namaBarang
-                    << setw(15) << fixed << setprecision(0)
-                    << data[i].totalPengeluaran
-                    << endl;
-
-                total += data[i].totalPengeluaran;
-                jumlah++;
-            }
-        }
-
-        cout << string(82,'-') << endl;
-
-        if(ditemukan)
-        {
-            cout << "\nJumlah Data      : " << jumlah << endl;
-            cout << "Total Bulanan    : Rp "
-                << fixed << setprecision(0)
-                << total << endl;
-        }
-        else
-        {
-            cout << "\nTidak ada data pada bulan tersebut.\n";
-        }
-
-        pauseScreen();
-    }
-
-    double ManajemenPengeluaran::totalPengeluaran()
-    {
-        loadPengeluaran();
-
-        double total = 0;
-
-        for (int i = 0; i < jumlahData; i++)
-        {
-            total += data[i].totalPengeluaran;
-        }
-
-        return total;
-    }
-
-    double ManajemenPengeluaran::totalPengeluaranHariIni()
-    {
-        loadPengeluaran();
-
-        string hariIni = getTanggalSekarang();
-
-        double total = 0;
-
-        for(int i = 0; i < jumlahData; i++)
-        {
-            if(data[i].tanggal == hariIni)
-            {
-                total += data[i].totalPengeluaran;
-            }
-        }
-
-        return total;
-    }
-
-
-    void Admin::tampilkanLayananTerlaris()
-    {
-        loadStatistikLayanan();
-
-        sortLayananTerlaris();
-
-        tampilkanHeader("LAYANAN TERLARIS");
-
-        if (jumlahStatistik == 0)
-        {
-            cout << "\nBelum ada data layanan.\n";
-            return;
-        }
-
-        cout << left
-            << setw(5) << "No"
-            << setw(35) << "Nama Layanan"
-            << setw(10) << "Jumlah"
-            << endl;
-
-        garisTengah();
-
-        for (int i = 0; i < jumlahStatistik; i++)
-        {
-            cout << left
-                << setw(5) << i + 1
-                << setw(35) << statistik[i].namaLayanan
-                << setw(10) << statistik[i].jumlahDipilih
-                << endl;
-        }
-
-        garisBawah();
-    }
-
-
-    void Admin::top5Layanan()
-    {
-        loadStatistikLayanan();
-
-        sortLayananTerlaris();
-
-        tampilkanHeader("TOP 5 LAYANAN TERLARIS");
-
-        if (jumlahStatistik == 0)
-        {
-            cout << "\nBelum ada data layanan.\n";
-            return;
-        }
-
-        cout << left
-            << setw(5) << "No"
-            << setw(35) << "Nama Layanan"
-            << setw(10) << "Jumlah"
-            << endl;
-
-        garisTengah();
-
-        int batas;
-
-        if (jumlahStatistik < 5)
-            batas = jumlahStatistik;
-        else
-            batas = 5;
-
-        for (int i = 0; i < batas; i++)
-        {
-            cout << left
-                << setw(5) << i + 1
-                << setw(35) << statistik[i].namaLayanan
-                << setw(10) << statistik[i].jumlahDipilih
-                << endl;
-        }
-
-        garisBawah();
-    }
-
-    void Admin::cariLayananTerlaris()
-    {
-        loadStatistikLayanan();
-
-        if (jumlahStatistik == 0)
-        {
-            cout << "\nBelum ada data layanan.\n";
-            return;
-        }
-
-        string keyword;
-
-        cin.ignore();
-
-        cout << "\nMasukkan nama layanan : ";
-        getline(cin, keyword);
-
-        bool ditemukan = false;
-
-        tampilkanHeader("HASIL PENCARIAN");
-
-        cout << left
-            << setw(5) << "No"
-            << setw(35) << "Nama Layanan"
-            << setw(10) << "Jumlah"
-            << endl;
-
-        garisTengah();
-
-        for(int i = 0; i < jumlahStatistik; i++)
-        {
-            string nama = statistik[i].namaLayanan;
-
-            if(toLowerCase(nama).find(toLowerCase(keyword)) != string::npos)
-            {
-                ditemukan = true;
-
-                cout << left
-                    << setw(5) << i + 1
-                    << setw(35) << statistik[i].namaLayanan
-                    << setw(10) << statistik[i].jumlahDipilih
-                    << endl;
-            }
-        }
-
-        if(!ditemukan)
-        {
-            cout << "\nLayanan tidak ditemukan.\n";
-        }
-
-        garisBawah();
-    }
-
-    void Admin::resetStatistikLayanan()
-    {
-        char konfirmasi;
-
-        cout << "\nYakin ingin menghapus seluruh statistik layanan? (y/n) : ";
-        cin >> konfirmasi;
-
-        if (konfirmasi == 'Y' || konfirmasi == 'y')
-        {
-            ofstream file("layanan_terlaris.txt");
-
-            if (!file.is_open())
-            {
-                cout << "\nGagal membuka file.\n";
-                return;
-            }
-
-            file.close();
-
-            jumlahStatistik = 0;
-
-            cout << "\nStatistik layanan berhasil direset.\n";
-        }
-        else
-        {
-            cout << "\nReset dibatalkan.\n";
+            clearScreen();
         }
     }
 
-
-    void Admin::menuLayananTerlaris()
+    void Admin::menuStok()
     {
-        
         int pilih;
 
         do
         {
             clearScreen();
 
-            tampilkanHeader("LAYANAN TERLARIS");
+            tampilkanHeader("MANAJEMEN STOK");
 
             cout << endl;
-            cout << " [1] Lihat Semua Layanan\n";
-            cout << " [2] Top 5 Layanan\n";
-            cout << " [3] Cari Layanan\n";
-            cout << " [4] Reset Statistik\n";
+            cout << " [1] Lihat Stok\n";
+            cout << " [2] Tambah Stok\n";
+            cout << " [3] Kurangi Stok\n";
+            cout << " [4] Edit Data\n";
+            cout << " [5] Cari Barang\n";
 
             garisTengah();
 
@@ -5172,25 +3757,31 @@ void ManajemenPengeluaran::loadPengeluaran()
             {
                 case 1:
                     clearScreen();
-                    tampilkanLayananTerlaris();
+                    lihatStok();
                     pauseScreen();
                     break;
 
                 case 2:
                     clearScreen();
-                    top5Layanan();
+                    tambahStok();
                     pauseScreen();
                     break;
 
                 case 3:
                     clearScreen();
-                    cariLayananTerlaris();
+                    kurangiStok();
                     pauseScreen();
                     break;
 
                 case 4:
                     clearScreen();
-                    resetStatistikLayanan();
+                    editStok();
+                    pauseScreen();
+                    break;
+
+                case 5:
+                    clearScreen();
+                    cariStok();
                     pauseScreen();
                     break;
 
@@ -5204,9 +3795,1463 @@ void ManajemenPengeluaran::loadPengeluaran()
 
         } while(pilih != 0);
     }
-int main() {
-    LaundrySystem sistem;
-    
-    sistem.prosesMenuUtama();
-    return 0;
-}
+
+    void Admin::loadStok()
+    {
+        ifstream file("stok.txt");
+
+        jumlahBahan = 0;
+
+        if(!file.is_open())
+        {
+            return;
+        }
+
+        while(getline(file, bahan[jumlahBahan].idBahan, '|'))
+        {
+            getline(file, bahan[jumlahBahan].namaBahan, '|');
+
+            file >> bahan[jumlahBahan].stok;
+            file.ignore();
+
+            getline(file, bahan[jumlahBahan].satuan, '|');
+
+            file >> bahan[jumlahBahan].hargaPerUnit;
+            file.ignore();
+
+            getline(file, bahan[jumlahBahan].tanggalKadaluarsa, '|');
+            getline(file, bahan[jumlahBahan].supplier, '|');
+
+            file >> bahan[jumlahBahan].minimalStok;
+            file.ignore();
+
+            jumlahBahan++;
+
+            if(jumlahBahan >= 100)
+            {
+                break;
+            }
+        }
+
+        file.close();
+    }
+
+    void Admin::saveStok()
+    {
+        ofstream file("stok.txt");
+
+        if(!file.is_open())
+        {
+            cout << "\nGagal menyimpan data stok.\n";
+            return;
+        }
+
+        for(int i = 0; i < jumlahBahan; i++)
+        {
+            file
+            << bahan[i].idBahan << "|"
+            << bahan[i].namaBahan << "|"
+            << bahan[i].stok << "|"
+            << bahan[i].satuan << "|"
+            << bahan[i].hargaPerUnit << "|"
+            << bahan[i].tanggalKadaluarsa << "|"
+            << bahan[i].supplier << "|"
+            << bahan[i].minimalStok
+            << endl;
+        }
+
+        file.close();
+    }
+
+    void Admin::lihatStok()
+    {
+        loadStok();
+
+        tampilkanHeader("DATA STOK");
+
+        if (jumlahBahan == 0)
+        {
+            cout << "\nBelum ada data stok.\n";
+            return;
+        }
+
+        cout << left
+            << setw(5)  << "No"
+            << setw(12) << "ID"
+            << setw(20) << "Nama"
+            << setw(10) << "Stok"
+            << setw(12) << "Satuan"
+            << setw(20) << "Supplier"
+            << endl;
+
+        garisTengah();
+
+        for (int i = 0; i < jumlahBahan; i++)
+        {
+            cout << left
+                << setw(5)  << i + 1
+                << setw(12) << bahan[i].idBahan
+                << setw(20) << bahan[i].namaBahan
+                << setw(10) << bahan[i].stok
+                << setw(12) << bahan[i].satuan
+                << setw(20) << bahan[i].supplier
+                << endl;
+        }
+
+        garisBawah();
+    }
+
+    void Admin::tambahStok()
+    {
+        loadStok();
+
+        if (jumlahBahan >= 100)
+        {
+            cout << "\nData stok sudah penuh!\n";
+            return;
+        }
+
+        tampilkanHeader("TAMBAH STOK");
+
+        cin.ignore();
+
+        cout << "ID Bahan               : ";
+        getline(cin, bahan[jumlahBahan].idBahan);
+
+        cout << "Nama Bahan             : ";
+        getline(cin, bahan[jumlahBahan].namaBahan);
+
+        cout << "Jumlah Stok            : ";
+        cin >> bahan[jumlahBahan].stok;
+        cin.ignore();
+
+        cout << "Satuan                 : ";
+        getline(cin, bahan[jumlahBahan].satuan);
+
+        cout << "Harga Per Unit         : ";
+        cin >> bahan[jumlahBahan].hargaPerUnit;
+        cin.ignore();
+
+        cout << "Tanggal Kadaluarsa     : ";
+        getline(cin, bahan[jumlahBahan].tanggalKadaluarsa);
+
+        cout << "Supplier               : ";
+        getline(cin, bahan[jumlahBahan].supplier);
+
+        cout << "Minimal Stok           : ";
+        cin >> bahan[jumlahBahan].minimalStok;
+
+        jumlahBahan++;
+
+        saveStok();
+
+        cout << "\nData stok berhasil ditambahkan.\n";
+    }
+
+
+    void Admin::editStok()
+    {
+        loadStok();
+
+        if (jumlahBahan == 0)
+        {
+            cout << "\nBelum ada data stok.\n";
+            return;
+        }
+
+        string id;
+
+        cin.ignore();
+
+        cout << "Masukkan ID Bahan yang akan diedit : ";
+        getline(cin, id);
+
+        bool ditemukan = false;
+
+        for (int i = 0; i < jumlahBahan; i++)
+        {
+            if (bahan[i].idBahan == id)
+            {
+                ditemukan = true;
+
+                tampilkanHeader("EDIT STOK");
+
+                cout << "\nData Lama\n";
+                cout << "ID                : " << bahan[i].idBahan << endl;
+                cout << "Nama              : " << bahan[i].namaBahan << endl;
+                cout << "Jumlah Stok       : " << bahan[i].stok << endl;
+                cout << "Satuan            : " << bahan[i].satuan << endl;
+                cout << "Harga             : " << bahan[i].hargaPerUnit << endl;
+                cout << "Kadaluarsa        : " << bahan[i].tanggalKadaluarsa << endl;
+                cout << "Supplier          : " << bahan[i].supplier << endl;
+                cout << "Minimal Stok      : " << bahan[i].minimalStok << endl;
+
+                int pilihEdit;
+
+        do
+        {
+            cout << "\n=====================================\n";
+            cout << "        PILIH DATA YANG DIUBAH\n";
+            cout << "=====================================\n";
+            cout << "1. Nama Bahan\n";
+            cout << "2. Jumlah Stok\n";
+            cout << "3. Satuan\n";
+            cout << "4. Harga\n";
+            cout << "5. Kadaluarsa\n";
+            cout << "6. Supplier\n";
+            cout << "7. Minimal Stok\n";
+            cout << "0. Simpan dan Keluar\n";
+            cout << "=====================================\n";
+
+            cout << "Pilihan : ";
+            cin >> pilihEdit;
+            cin.ignore();
+
+            switch(pilihEdit)
+            {
+                case 1:
+                    cout << "Nama Baru : ";
+                    getline(cin, bahan[i].namaBahan);
+                    break;
+
+                case 2:
+                    cout << "Jumlah Stok Baru : ";
+                    cin >> bahan[i].stok;
+                    cin.ignore();
+                    break;
+
+                case 3:
+                    cout << "Satuan Baru : ";
+                    getline(cin, bahan[i].satuan);
+                    break;
+
+                case 4:
+                    cout << "Harga Baru : ";
+                    cin >> bahan[i].hargaPerUnit;
+                    cin.ignore();
+                    break;
+
+                case 5:
+                    cout << "Tanggal Kadaluarsa Baru : ";
+                    getline(cin, bahan[i].tanggalKadaluarsa);
+                    break;
+
+                case 6:
+                    cout << "Supplier Baru : ";
+                    getline(cin, bahan[i].supplier);
+                    break;
+
+                case 7:
+                    cout << "Minimal Stok Baru : ";
+                    cin >> bahan[i].minimalStok;
+                    cin.ignore();
+                    break;
+
+                case 0:
+                    break;
+
+                default:
+                    cout << "\nPilihan tidak valid!\n";
+            }
+
+        }while(pilihEdit != 0);
+
+                    saveStok();
+
+                    cout << "\nData berhasil diperbarui.\n";
+
+                    break;
+                }
+            }
+
+            if (!ditemukan)
+            {
+                cout << "\nID Bahan tidak ditemukan.\n";
+            }
+        }
+
+    void Admin::kurangiStok()
+    {
+        loadStok();
+
+        if (jumlahBahan == 0)
+        {
+            cout << "\nBelum ada data stok.\n";
+            return;
+        }
+
+        string id;
+        double jumlahKurang;
+
+        cin.ignore();
+
+        cout << "Masukkan ID Bahan : ";
+        getline(cin, id);
+
+        bool ditemukan = false;
+
+        for (int i = 0; i < jumlahBahan; i++)
+        {
+            if (bahan[i].idBahan == id)
+            {
+                ditemukan = true;
+
+                cout << "Nama Bahan : " << bahan[i].namaBahan << endl;
+                cout << "Stok Saat Ini : " << bahan[i].stok << " " << bahan[i].satuan << endl;
+
+                cout << "Jumlah yang digunakan : ";
+                cin >> jumlahKurang;
+
+                if (jumlahKurang > bahan[i].stok)
+                {
+                    cout << "\nStok tidak mencukupi!\n";
+                    return;
+                }
+
+                bahan[i].stok -= jumlahKurang;
+
+                saveStok();
+
+                cout << "\nStok berhasil dikurangi.\n";
+                return;
+            }
+        }
+
+        if (!ditemukan)
+        {
+            cout << "\nID Bahan tidak ditemukan.\n";
+        }
+    }
+
+    void Admin::cariStok()
+    {
+        loadStok();
+
+        if (jumlahBahan == 0)
+        {
+            cout << "\nBelum ada data stok.\n";
+            return;
+        }
+
+        string keyword;
+
+        cin.ignore();
+
+        cout << "Masukkan ID atau Nama Bahan : ";
+        getline(cin, keyword);
+
+        bool ditemukan = false;
+
+        tampilkanHeader("HASIL PENCARIAN STOK");
+
+        cout << left
+            << setw(5)  << "No"
+            << setw(12) << "ID"
+            << setw(20) << "Nama"
+            << setw(10) << "Stok"
+            << setw(12) << "Satuan"
+            << setw(20) << "Supplier"
+            << endl;
+
+        garisTengah();
+
+        for(int i = 0; i < jumlahBahan; i++)
+        {
+            string id = toLowerCase(bahan[i].idBahan);
+            string nama = toLowerCase(bahan[i].namaBahan);
+            string cari = toLowerCase(keyword);
+
+            if(id.find(cari) != string::npos ||
+            nama.find(cari) != string::npos)
+            {
+                ditemukan = true;
+
+                cout << left
+                    << setw(5)  << i + 1
+                    << setw(12) << bahan[i].idBahan
+                    << setw(20) << bahan[i].namaBahan
+                    << setw(10) << bahan[i].stok
+                    << setw(12) << bahan[i].satuan
+                    << setw(20) << bahan[i].supplier
+                    << endl;
+            }
+        }
+
+        if(!ditemukan)
+        {
+            cout << "\nData tidak ditemukan.\n";
+        }
+
+        garisBawah();
+    }
+
+
+
+    void LaundrySystem::tampilkanHeader() {
+        cout << "" << string(50, '=') << endl;
+        cout << "       SISTEM MANAJEMEN LAUNDRY AMBA" << endl;
+        cout << "          Solusi Terpercaya Untuk" << endl;
+        cout << "          Kebutuhan Laundry Anda" << endl;
+        cout << string(50, '=') << endl;
+    }
+
+    void LaundrySystem::tampilkanMenuUtama() {
+        cout << "\n" << string(40, '-') << endl;
+        cout << left << setw(13) << "" << "MENU UTAMA";
+        cout << "\n" << string(40, '-') << endl;
+        cout << "1. Login" << endl;
+        cout << "2. Registrasi" << endl;
+        cout << "0. Keluar" << endl << endl;
+        cout << "Pilih: ";
+    }
+
+    void LaundrySystem::prosesMenuUtama() {
+        int pilihan;
+        customer.loadUsers();
+
+        admin.jumlahPengguna = customer.jumlahPengguna;
+        int i;
+        for (i = 0; i < customer.jumlahPengguna; ++i) {
+            admin.user[i] = customer.user[i];
+        }
+        while(true) {
+            tampilkanHeader();
+            tampilkanMenuUtama();
+            cin >> pilihan;
+            if(pilihan == 1) {
+                clearScreen();
+                customer.indeksAktif = customer.login(role);
+                if(customer.indeksAktif != -1) {
+                    cout << "Login berhasil sebagai " << role << ".\n\n";
+                    if(role == "customer") {
+                        pauseScreen();
+                        clearScreen();
+                        customer.prosesMenuCustomer();
+                    } else if(role == "admin") {
+                        admin.indeksAktif = customer.indeksAktif;
+                        pauseScreen();
+                        clearScreen();
+                        admin.menuAdmin();
+                    }
+                }
+            } else if(pilihan == 2) {
+                customer.registrasiPengguna();
+                customer.saveUsers();
+            } else if(pilihan == 0) {
+                cout << "Terima kasih. Program selesai.\n";
+                break;
+            } else {
+                cout << "Pilihan tidak valid.\n";
+            }
+        }
+    }
+
+    void ManajemenPengeluaran::menuPengeluaran() {
+        loadPengeluaran();
+        int pilihan;
+
+        do
+        {
+            clearScreen();
+
+            cout << "\n=============================================\n";
+            cout << "         MANAJEMEN PENGELUARAN\n";
+            cout << "=============================================\n";
+            cout << "1. Tambah Pengeluaran\n";
+            cout << "2. Lihat Semua Pengeluaran\n";
+            cout << "3. Cari Pengeluaran\n";
+            cout << "4. Edit Pengeluaran\n";
+            cout << "5. Hapus Pengeluaran\n";
+            cout << "6. Laporan Harian\n";
+            cout << "7. Laporan Mingguan\n";
+            cout << "8. Laporan Bulanan\n";
+            cout << "9. Total Pengeluaran\n";
+            cout << "0. Kembali\n";
+            cout << "=============================================\n";
+            cout << "Pilihan : ";
+            cin >> pilihan;
+
+            switch(pilihan)
+            {
+                case 1:{
+                    clearScreen();
+                    tambahPengeluaran();
+                    break;
+                }
+                    
+
+                case 2:{
+                    clearScreen();
+                    lihatPengeluaran();
+                    break;
+                }
+                    
+
+                case 3:{
+                    clearScreen();
+                    cariPengeluaran();
+                    break;
+                }
+                    
+
+                case 4:{
+                    clearScreen();
+                    editPengeluaran();
+                    break;
+                }
+                    
+
+                case 5:{
+                    clearScreen();
+                    hapusPengeluaran();
+                    break;
+                }
+                    
+
+                case 6:
+                {
+                    clearScreen();
+                    laporanHarian();
+                    break;
+                }
+
+                case 7:
+                {
+                    clearScreen();
+                    laporanMingguan();
+                    break;
+                }
+
+                case 8:
+                {
+                    clearScreen();
+                    laporanBulanan();
+                    break;
+                }
+
+                case 9:
+                {
+                    clearScreen();
+
+                    cout << "=========================================\n";
+                    cout << "         TOTAL PENGELUARAN\n";
+                    cout << "=========================================\n";
+
+                    cout << "Total Pengeluaran : Rp "
+                        << fixed << setprecision(0)
+                        << totalPengeluaran() << endl;
+
+                    cout << "=========================================\n";
+
+                    pauseScreen();
+                    break;
+                }
+
+                case 0:
+                    return;
+
+                default:
+                    cout << "Pilihan tidak valid!" << endl;
+                    pauseScreen();
+            }
+
+        } while (pilihan != 0);
+    }
+
+    void ManajemenPengeluaran::tambahPengeluaran()
+    {
+        clearScreen();
+
+        cout << "=============================================\n";
+        cout << "          TAMBAH PENGELUARAN\n";
+        cout << "=============================================\n";
+
+        if (jumlahData >= MAX_PENGELUARAN)
+        {
+            cout << "Data pengeluaran sudah penuh!\n";
+            pauseScreen();
+            return;
+        }
+
+        Pengeluaran p;
+
+        // ID otomatis
+        stringstream ss;
+        ss << "PGL" << setw(3) << setfill('0') << jumlahData + 1;
+        p.idPengeluaran = ss.str();
+
+        cout << "ID Pengeluaran : " << p.idPengeluaran << endl;
+
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        cout << "Tanggal (yyyy-mm-dd) : ";
+        getline(cin, p.tanggal);
+
+        cout << "\nKategori\n";
+        cout << "1. Bahan Laundry\n";
+        cout << "2. Operasional\n";
+        cout << "3. Gaji Pegawai\n";
+        cout << "4. Maintenance\n";
+        cout << "5. Transportasi\n";
+        cout << "6. Lain-lain\n";
+
+        int pilihKategori;
+
+        do
+        {
+            cout << "Pilih : ";
+            cin >> pilihKategori;
+
+        }while(pilihKategori < 1 || pilihKategori > 6);
+
+        switch(pilihKategori)
+        {
+            case 1: p.kategori = "Bahan Laundry"; break;
+            case 2: p.kategori = "Operasional"; break;
+            case 3: p.kategori = "Gaji Pegawai"; break;
+            case 4: p.kategori = "Maintenance"; break;
+            case 5: p.kategori = "Transportasi"; break;
+            case 6: p.kategori = "Lain-lain"; break;
+        }
+
+        cin.ignore();
+
+        cout << "Nama Barang        : ";
+        getline(cin,p.namaBarang);
+
+        cout << "Jumlah             : ";
+        cin >> p.jumlah;
+
+        cout << "Harga Satuan       : ";
+        cin >> p.hargaSatuan;
+
+        cin.ignore();
+
+        cout << "Keterangan         : ";
+        getline(cin,p.keterangan);
+
+        p.totalPengeluaran = p.jumlah * p.hargaSatuan;
+
+        data[jumlahData] = p;
+
+        jumlahData++;
+
+        savePengeluaran();
+
+        cout << "\n=====================================\n";
+        cout << "Pengeluaran berhasil ditambahkan.\n";
+        cout << "Total : Rp " << fixed << setprecision(0)
+            << p.totalPengeluaran << endl;
+        cout << "=====================================\n";
+
+        pauseScreen();
+    }
+
+    void ManajemenPengeluaran::savePengeluaran()
+    {
+        ofstream file("pengeluaran.txt");
+
+        if(!file.is_open())
+            return;
+
+        for(int i = 0; i < jumlahData; i++)
+        {
+            file << data[i].idPengeluaran << "|"
+                << data[i].tanggal << "|"
+                << data[i].kategori << "|"
+                << data[i].namaBarang << "|"
+                << data[i].jumlah << "|"
+                << data[i].hargaSatuan << "|"
+                << data[i].totalPengeluaran << "|"
+                << data[i].keterangan << endl;
+        }
+
+        file.close();
+    }
+
+    void ManajemenPengeluaran::loadPengeluaran()
+    {
+        ifstream file("pengeluaran.txt");
+
+        if(!file.is_open())
+        {
+            jumlahData = 0;
+            return;
+        }
+
+        jumlahData = 0;
+
+        string baris;
+
+        while(getline(file, baris))
+        {
+            stringstream ss(baris);
+            string temp;
+
+            getline(ss, data[jumlahData].idPengeluaran, '|');
+            getline(ss, data[jumlahData].tanggal, '|');
+            getline(ss, data[jumlahData].kategori, '|');
+            getline(ss, data[jumlahData].namaBarang, '|');
+
+            getline(ss, temp, '|');
+            data[jumlahData].jumlah = atoi(temp.c_str());
+
+            getline(ss, temp, '|');
+            data[jumlahData].hargaSatuan = atof(temp.c_str());
+
+            getline(ss, temp, '|');
+            data[jumlahData].totalPengeluaran = atof(temp.c_str());
+
+            getline(ss, data[jumlahData].keterangan);
+
+            jumlahData++;
+
+            if(jumlahData >= MAX_PENGELUARAN)
+                break;
+        }
+
+        file.close();
+    }
+
+
+        void ManajemenPengeluaran::lihatPengeluaran() {
+            loadPengeluaran();
+
+            if (jumlahData == 0)
+            {
+                cout << "\nBelum ada data pengeluaran.\n";
+                return;
+            }
+
+            cout << "\n";
+            cout << "===============================================================================================================\n";
+            cout << "                                      DAFTAR PENGELUARAN LAUNDRY\n";
+            cout << "===============================================================================================================\n";
+            cout << left
+                << setw(5)  << "No"
+                << setw(10) << "ID"
+                << setw(15) << "Tanggal"
+                << setw(18) << "Kategori"
+                << setw(28) << "Nama Barang"
+                << setw(8)  << "Qty"
+                << setw(15) << "Harga"
+                << setw(15) << "Total"
+                << endl;
+
+            cout << string(111,'=') << endl;
+
+            for(int i = 0; i < jumlahData; i++)
+            {
+                cout << left
+                    << setw(5)  << i + 1
+                    << setw(10) << data[i].idPengeluaran
+                    << setw(15) << data[i].tanggal
+                    << setw(18) << data[i].kategori
+                    << setw(28) << data[i].namaBarang
+                    << setw(8)  << data[i].jumlah
+                    << "Rp " << setw(12) << fixed << setprecision(0) << data[i].hargaSatuan
+                    << "Rp " << setw(12) << fixed << setprecision(0) << data[i].totalPengeluaran
+                    << endl;
+            }
+
+            cout << string(111,'=') << endl;
+
+            int pilih;
+
+            cout << "\nLihat detail nomor (0 = kembali) : ";
+            cin >> pilih;
+
+            if(pilih >= 1 && pilih <= jumlahData)
+            {
+                Pengeluaran p = data[pilih - 1];
+
+                clearScreen();
+
+                cout << "====================================================\n";
+                cout << "              DETAIL PENGELUARAN\n";
+                cout << "====================================================\n";
+
+                cout << left << setw(20) << "ID Pengeluaran" << ": " << p.idPengeluaran << endl;
+                cout << left << setw(20) << "Tanggal"        << ": " << p.tanggal << endl;
+                cout << left << setw(20) << "Kategori"       << ": " << p.kategori << endl;
+                cout << left << setw(20) << "Nama Barang"    << ": " << p.namaBarang << endl;
+                cout << left << setw(20) << "Jumlah"         << ": " << p.jumlah << endl;
+                cout << left << setw(20) << "Harga Satuan"   << ": Rp " << fixed << setprecision(0) << p.hargaSatuan << endl;
+                cout << left << setw(20) << "Total"          << ": Rp " << fixed << setprecision(0) << p.totalPengeluaran << endl;
+                cout << left << setw(20) << "Keterangan"     << ": " << p.keterangan << endl;
+
+                cout << "====================================================\n";
+
+                pauseScreen();
+            } else if(pilih != 0)
+            {
+                cout << "\nNomor pengeluaran tidak valid!\n";
+                pauseScreen();
+            }
+        }
+
+        void ManajemenPengeluaran::editPengeluaran()
+        {
+            loadPengeluaran();
+
+            if (jumlahData == 0)
+            {
+                cout << "\nBelum ada data pengeluaran.\n";
+                return;
+            }
+
+            string id;
+
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+            cout << "\n=====================================\n";
+            cout << "        EDIT PENGELUARAN\n";
+            cout << "=====================================\n";
+
+            cout << "Masukkan ID Pengeluaran : ";
+            getline(cin, id);
+
+            bool ditemukan = false;
+
+            for (int i = 0; i < jumlahData; i++)
+            {
+                if (data[i].idPengeluaran == id)
+                {
+                    ditemukan = true;
+
+                    cout << "\nData ditemukan!\n";
+
+                    cout << "Kategori lama      : " << data[i].kategori << endl;
+                    cout << "Nama Barang lama   : " << data[i].namaBarang << endl;
+                    cout << "Jumlah lama        : " << data[i].jumlah << endl;
+                    cout << "Harga lama         : " << data[i].hargaSatuan << endl;
+                    cout << "Keterangan lama    : " << data[i].keterangan << endl;
+
+                    cout << "\n===== Masukkan Data Baru =====\n";
+
+                    cout << "Kategori : ";
+                    getline(cin, data[i].kategori);
+
+                    cout << "Nama Barang : ";
+                    getline(cin, data[i].namaBarang);
+
+                    cout << "Jumlah : ";
+                    cin >> data[i].jumlah;
+
+                    cout << "Harga Satuan : ";
+                    cin >> data[i].hargaSatuan;
+
+                    cin.ignore();
+
+                    cout << "Keterangan : ";
+                    getline(cin, data[i].keterangan);
+
+                    data[i].totalPengeluaran =
+                        data[i].jumlah * data[i].hargaSatuan;
+
+                    savePengeluaran();
+
+                    cout << "\nData berhasil diperbarui.\n";
+
+                    break;
+                }
+            }
+
+            if (!ditemukan)
+            {
+                cout << "\nID Pengeluaran tidak ditemukan.\n";
+            }
+        }
+
+        void ManajemenPengeluaran::hapusPengeluaran(){
+            loadPengeluaran();
+
+            if (jumlahData == 0)
+            {
+                cout << "\nBelum ada data pengeluaran.\n";
+                return;
+            }
+
+            string id;
+
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+            cout << "\n=====================================\n";
+            cout << "       HAPUS PENGELUARAN\n";
+            cout << "=====================================\n";
+
+            cout << "Masukkan ID Pengeluaran : ";
+            getline(cin, id);
+
+            bool ditemukan = false;
+
+            for (int i = 0; i < jumlahData; i++)
+            {
+                if (data[i].idPengeluaran == id)
+                {
+                    ditemukan = true;
+
+                    cout << "\nData yang akan dihapus\n";
+                    cout << "ID           : " << data[i].idPengeluaran << endl;
+                    cout << "Tanggal      : " << data[i].tanggal << endl;
+                    cout << "Kategori     : " << data[i].kategori << endl;
+                    cout << "Nama Barang  : " << data[i].namaBarang << endl;
+                    cout << "Total        : Rp " << data[i].totalPengeluaran << endl;
+
+                    char konfirmasi;
+
+                    cout << "\nYakin ingin menghapus? (Y/T) : ";
+                    cin >> konfirmasi;
+
+                    if (konfirmasi == 'Y' || konfirmasi == 'y')
+                    {
+                        for (int j = i; j < jumlahData - 1; j++)
+                        {
+                            data[j] = data[j + 1];
+                        }
+
+                        jumlahData--;
+
+                        savePengeluaran();
+
+                        cout << "\nData berhasil dihapus.\n";
+                    }
+                    else
+                    {
+                        cout << "\nPenghapusan dibatalkan.\n";
+                    }
+
+                    break;
+                }
+            }
+
+            if (!ditemukan)
+            {
+                cout << "\nID tidak ditemukan.\n";
+            }
+        }
+
+        void ManajemenPengeluaran::cariPengeluaran() {
+            loadPengeluaran();
+
+            if (jumlahData == 0)
+            {
+                cout << "\nBelum ada data pengeluaran.\n";
+                return;
+            }
+
+            string keyword;
+
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+            cout << "\n=====================================\n";
+            cout << "        CARI PENGELUARAN\n";
+            cout << "=====================================\n";
+
+            cout << "Masukkan ID / Nama Barang / Kategori : ";
+            getline(cin, keyword);
+
+            bool ditemukan = false;
+
+            for (int i = 0; i < jumlahData; i++)
+            {
+                if (data[i].idPengeluaran == keyword ||
+                    data[i].namaBarang == keyword ||
+                    data[i].kategori == keyword)
+                {
+                    ditemukan = true;
+
+                    cout << "\n=====================================\n";
+                    cout << "ID             : " << data[i].idPengeluaran << endl;
+                    cout << "Tanggal        : " << data[i].tanggal << endl;
+                    cout << "Kategori       : " << data[i].kategori << endl;
+                    cout << "Nama Barang    : " << data[i].namaBarang << endl;
+                    cout << "Jumlah         : " << data[i].jumlah << endl;
+                    cout << "Harga Satuan   : Rp " << data[i].hargaSatuan << endl;
+                    cout << "Total          : Rp " << data[i].totalPengeluaran << endl;
+                    cout << "Keterangan     : " << data[i].keterangan << endl;
+                    cout << "=====================================\n";
+                }
+            }
+
+            if (!ditemukan)
+            {
+                cout << "\nData tidak ditemukan.\n";
+            }
+        }
+
+        void ManajemenPengeluaran::laporanHarian(){
+            loadPengeluaran();
+
+            if (jumlahData == 0)
+            {
+                cout << "\nBelum ada data pengeluaran.\n";
+                return;
+            }
+
+            string tanggal;
+            double total = 0;
+            bool ditemukan = false;
+
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+            cout << "=============================================\n";
+            cout << "          LAPORAN HARIAN\n";
+            cout << "=============================================\n";
+
+            cout << "Masukkan tanggal (yyyy-mm-dd) : ";
+            getline(cin, tanggal);
+
+            cout << "\n=========================================================================================================\n";
+            cout << left
+                << setw(12) << "ID"
+                << setw(15) << "Tanggal"
+                << setw(20) << "Kategori"
+                << setw(20) << "Barang"
+                << setw(15) << "Total";
+            cout << endl;
+
+            cout << "=========================================================================================================\n";
+
+            for (int i = 0; i < jumlahData; i++)
+            {
+                if (data[i].tanggal == tanggal)
+                {
+                    ditemukan = true;
+
+                    cout << left
+                        << setw(12) << data[i].idPengeluaran
+                        << setw(15) << data[i].tanggal
+                        << setw(20) << data[i].kategori
+                        << setw(20) << data[i].namaBarang
+                        << setw(15) << fixed << setprecision(0)
+                        << data[i].totalPengeluaran
+                        << endl;
+
+                    total += data[i].totalPengeluaran;
+                }
+            }
+
+            cout << "=========================================================================================================\n";
+
+            if (ditemukan)
+            {
+                cout << "\nTotal Pengeluaran Hari Ini : Rp "
+                    << fixed << setprecision(0)
+                    << total << endl;
+            }
+            else
+            {
+                cout << "\nTidak ada pengeluaran pada tanggal tersebut.\n";
+            }
+
+            pauseScreen();
+        }
+
+        void ManajemenPengeluaran::laporanMingguan(){
+            loadPengeluaran();
+
+            if (jumlahData == 0)
+            {
+                cout << "\nBelum ada data pengeluaran.\n";
+                return;
+            }
+
+            string tanggalAwal, tanggalAkhir;
+            double total = 0;
+            bool ditemukan = false;
+
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+            cout << "=============================================\n";
+            cout << "         LAPORAN MINGGUAN\n";
+            cout << "=============================================\n";
+
+            cout << "Masukkan Tanggal Awal (yyyy-mm-dd) : ";
+            getline(cin, tanggalAwal);
+
+            cout << "Masukkan Tanggal Akhir (yyyy-mm-dd) : ";
+            getline(cin, tanggalAkhir);
+
+            cout << "\n====================================================================================================\n";
+            cout << left
+                << setw(12) << "ID"
+                << setw(15) << "Tanggal"
+                << setw(20) << "Kategori"
+                << setw(20) << "Barang"
+                << setw(15) << "Total";
+            cout << endl;
+
+            cout << "====================================================================================================\n";
+
+            for (int i = 0; i < jumlahData; i++)
+            {
+                if (data[i].tanggal >= tanggalAwal &&
+                    data[i].tanggal <= tanggalAkhir)
+                {
+                    ditemukan = true;
+
+                    cout << left
+                        << setw(12) << data[i].idPengeluaran
+                        << setw(15) << data[i].tanggal
+                        << setw(20) << data[i].kategori
+                        << setw(20) << data[i].namaBarang
+                        << setw(15) << fixed << setprecision(0)
+                        << data[i].totalPengeluaran
+                        << endl;
+
+                    total += data[i].totalPengeluaran;
+                }
+            }
+
+            cout << "====================================================================================================\n";
+
+            if (ditemukan)
+            {
+                cout << "\nTotal Pengeluaran : Rp "
+                    << fixed << setprecision(0)
+                    << total << endl;
+            }
+            else
+            {
+                cout << "\nTidak ada data pada rentang tanggal tersebut.\n";
+            }
+
+            pauseScreen();
+        }
+
+
+
+        void ManajemenPengeluaran::laporanBulanan(){
+            loadPengeluaran();
+
+            if (jumlahData == 0)
+            {
+                cout << "\nBelum ada data pengeluaran.\n";
+                pauseScreen();
+                return;
+            }
+
+            string bulan;
+            double total = 0;
+            int jumlah = 0;
+
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+            cout << "=========================================\n";
+            cout << "        LAPORAN BULANAN\n";
+            cout << "=========================================\n";
+
+            cout << "Masukkan bulan (yyyy-mm): ";
+            getline(cin, bulan);
+
+            cout << "\n";
+            cout << left
+                << setw(12) << "ID"
+                << setw(15) << "Tanggal"
+                << setw(20) << "Kategori"
+                << setw(20) << "Barang"
+                << setw(15) << "Total" << endl;
+
+            cout << string(82,'-') << endl;
+
+            bool ditemukan = false;
+
+            for(int i = 0; i < jumlahData; i++)
+            {
+                if(data[i].tanggal.substr(0,7) == bulan)
+                {
+                    ditemukan = true;
+
+                    cout << left
+                        << setw(12) << data[i].idPengeluaran
+                        << setw(15) << data[i].tanggal
+                        << setw(20) << data[i].kategori
+                        << setw(20) << data[i].namaBarang
+                        << setw(15) << fixed << setprecision(0)
+                        << data[i].totalPengeluaran
+                        << endl;
+
+                    total += data[i].totalPengeluaran;
+                    jumlah++;
+                }
+            }
+
+            cout << string(82,'-') << endl;
+
+            if(ditemukan)
+            {
+                cout << "\nJumlah Data      : " << jumlah << endl;
+                cout << "Total Bulanan    : Rp "
+                    << fixed << setprecision(0)
+                    << total << endl;
+            }
+            else
+            {
+                cout << "\nTidak ada data pada bulan tersebut.\n";
+            }
+
+            pauseScreen();
+        }
+
+        double ManajemenPengeluaran::totalPengeluaran()
+        {
+            loadPengeluaran();
+
+            double total = 0;
+
+            for (int i = 0; i < jumlahData; i++)
+            {
+                total += data[i].totalPengeluaran;
+            }
+
+            return total;
+        }
+
+        double ManajemenPengeluaran::totalPengeluaranHariIni()
+        {
+            loadPengeluaran();
+
+            string hariIni = getTanggalSekarang();
+
+            double total = 0;
+
+            for(int i = 0; i < jumlahData; i++)
+            {
+                if(data[i].tanggal == hariIni)
+                {
+                    total += data[i].totalPengeluaran;
+                }
+            }
+
+            return total;
+        }
+
+
+        void Admin::tampilkanLayananTerlaris()
+        {
+            loadStatistikLayanan();
+
+            sortLayananTerlaris();
+
+            tampilkanHeader("LAYANAN TERLARIS");
+
+            if (jumlahStatistik == 0)
+            {
+                cout << "\nBelum ada data layanan.\n";
+                return;
+            }
+
+            cout << left
+                << setw(5) << "No"
+                << setw(35) << "Nama Layanan"
+                << setw(10) << "Jumlah"
+                << endl;
+
+            garisTengah();
+
+            for (int i = 0; i < jumlahStatistik; i++)
+            {
+                cout << left
+                    << setw(5) << i + 1
+                    << setw(35) << statistik[i].namaLayanan
+                    << setw(10) << statistik[i].jumlahDipilih
+                    << endl;
+            }
+
+            garisBawah();
+        }
+
+
+        void Admin::top5Layanan()
+        {
+            loadStatistikLayanan();
+
+            sortLayananTerlaris();
+
+            tampilkanHeader("TOP 5 LAYANAN TERLARIS");
+
+            if (jumlahStatistik == 0)
+            {
+                cout << "\nBelum ada data layanan.\n";
+                return;
+            }
+
+            cout << left
+                << setw(5) << "No"
+                << setw(35) << "Nama Layanan"
+                << setw(10) << "Jumlah"
+                << endl;
+
+            garisTengah();
+
+            int batas;
+
+            if (jumlahStatistik < 5)
+                batas = jumlahStatistik;
+            else
+                batas = 5;
+
+            for (int i = 0; i < batas; i++)
+            {
+                cout << left
+                    << setw(5) << i + 1
+                    << setw(35) << statistik[i].namaLayanan
+                    << setw(10) << statistik[i].jumlahDipilih
+                    << endl;
+            }
+
+            garisBawah();
+        }
+
+        void Admin::cariLayananTerlaris()
+        {
+            loadStatistikLayanan();
+
+            if (jumlahStatistik == 0)
+            {
+                cout << "\nBelum ada data layanan.\n";
+                return;
+            }
+
+            string keyword;
+
+            cin.ignore();
+
+            cout << "\nMasukkan nama layanan : ";
+            getline(cin, keyword);
+
+            bool ditemukan = false;
+
+            tampilkanHeader("HASIL PENCARIAN");
+
+            cout << left
+                << setw(5) << "No"
+                << setw(35) << "Nama Layanan"
+                << setw(10) << "Jumlah"
+                << endl;
+
+            garisTengah();
+
+            for(int i = 0; i < jumlahStatistik; i++)
+            {
+                string nama = statistik[i].namaLayanan;
+
+                if(toLowerCase(nama).find(toLowerCase(keyword)) != string::npos)
+                {
+                    ditemukan = true;
+
+                    cout << left
+                        << setw(5) << i + 1
+                        << setw(35) << statistik[i].namaLayanan
+                        << setw(10) << statistik[i].jumlahDipilih
+                        << endl;
+                }
+            }
+
+            if(!ditemukan)
+            {
+                cout << "\nLayanan tidak ditemukan.\n";
+            }
+
+            garisBawah();
+        }
+
+        void Admin::resetStatistikLayanan()
+        {
+            char konfirmasi;
+
+            cout << "\nYakin ingin menghapus seluruh statistik layanan? (y/n) : ";
+            cin >> konfirmasi;
+
+            if (konfirmasi == 'Y' || konfirmasi == 'y')
+            {
+                ofstream file("layanan_terlaris.txt");
+
+                if (!file.is_open())
+                {
+                    cout << "\nGagal membuka file.\n";
+                    return;
+                }
+
+                file.close();
+
+                jumlahStatistik = 0;
+
+                cout << "\nStatistik layanan berhasil direset.\n";
+            }
+            else
+            {
+                cout << "\nReset dibatalkan.\n";
+            }
+        }
+
+
+        void Admin::menuLayananTerlaris()
+        {
+            
+            int pilih;
+
+            do
+            {
+                clearScreen();
+
+                tampilkanHeader("LAYANAN TERLARIS");
+
+                cout << endl;
+                cout << " [1] Lihat Semua Layanan\n";
+                cout << " [2] Top 5 Layanan\n";
+                cout << " [3] Cari Layanan\n";
+                cout << " [4] Reset Statistik\n";
+
+                garisTengah();
+
+                cout << " [0] Kembali\n";
+
+                garisBawah();
+
+                cout << "Pilih : ";
+                cin >> pilih;
+
+                switch(pilih)
+                {
+                    case 1:
+                        clearScreen();
+                        tampilkanLayananTerlaris();
+                        pauseScreen();
+                        break;
+
+                    case 2:
+                        clearScreen();
+                        top5Layanan();
+                        pauseScreen();
+                        break;
+
+                    case 3:
+                        clearScreen();
+                        cariLayananTerlaris();
+                        pauseScreen();
+                        break;
+
+                    case 4:
+                        clearScreen();
+                        resetStatistikLayanan();
+                        pauseScreen();
+                        break;
+
+                    case 0:
+                        break;
+
+                    default:
+                        cout << "\nPilihan tidak valid.\n";
+                        pauseScreen();
+                }
+
+            } while(pilih != 0);
+        }
+    int main() {
+        LaundrySystem sistem;
+        
+        sistem.prosesMenuUtama();
+        return 0;
+    }
